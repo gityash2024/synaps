@@ -1,46 +1,112 @@
-# Getting Started with Create React App
+# Synaps - Cloud Infrastructure Management Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Synaps is a modern frontend React application for managing cloud infrastructure resources. It allows users to create projects, deploy virtual machines, configure networks, and manage data disks across different cloud platforms.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Authentication**
+  - Login with email and password
+  - Protected routes for authenticated users
 
-### `npm start`
+- **Project Management**
+  - Create and view cloud infrastructure projects
+  - Support for multiple cloud platforms (AWS, Azure, Private Cloud, VMware)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- **Resource Management**
+  - Networks and subnets configuration
+  - Virtual machine deployment
+  - Data disk management
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- **Modern UI**
+  - Responsive design with mobile support
+  - Clean, minimalist interface using Tailwind CSS
+  - Interactive modals and notifications
 
-### `npm test`
+## Tech Stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- React with TypeScript
+- React Router for navigation
+- Tailwind CSS for styling
+- Zustand for state management
+- React Toastify for notifications
+- Heroicons for icons
 
-### `npm run build`
+## Getting Started
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Prerequisites
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Node.js (v14 or later)
+- npm or yarn
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Installation
 
-### `npm run eject`
+1. Clone the repository
+```
+git clone https://github.com/yourusername/synaps.git
+cd synaps
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+2. Install dependencies
+```
+npm install
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+3. Start the development server
+```
+npm start
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+4. Open your browser and navigate to `http://localhost:3000`
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+### Login Credentials
 
-## Learn More
+Use the following demo credentials to log in:
+- Email: `email@demo.com`
+- Password: `123456789`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Project Structure
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
+synaps/
+├── public/
+├── src/
+│   ├── components/
+│   │   ├── layout/
+│   │   │   ├── Layout.tsx
+│   │   │   ├── Navbar.tsx
+│   │   │   └── Sidebar.tsx
+│   │   ├── modals/
+│   │   │   ├── Modal.tsx
+│   │   │   ├── CreateProjectModal.tsx
+│   │   │   ├── AddNetworkModal.tsx
+│   │   │   ├── AddVMModal.tsx
+│   │   │   └── AddDiskModal.tsx
+│   │   └── ProtectedRoute.tsx
+│   ├── context/
+│   │   └── AuthContext.tsx
+│   ├── pages/
+│   │   ├── Admin.tsx
+│   │   ├── Dashboard.tsx
+│   │   ├── Error.tsx
+│   │   ├── Login.tsx
+│   │   └── ProjectDetails.tsx
+│   ├── store/
+│   │   └── projectStore.ts
+│   ├── App.tsx
+│   ├── index.tsx
+│   └── index.css
+├── package.json
+└── tailwind.config.js
+```
+
+## Future Enhancements
+
+- User management and role-based access control
+- Integration with real cloud provider APIs
+- Resource monitoring and metrics
+- Cost estimation and budgeting
+- Resource templates and automation
+
+## License
+
+This project is licensed under the MIT License. # synaps
