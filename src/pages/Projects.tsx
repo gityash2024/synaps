@@ -44,10 +44,10 @@ const Projects: React.FC = () => {
   return (
     <div>
       <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
+        <h1 className="text-2xl font-bold text-gray-900 font-montserrat">Projects</h1>
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 bg-primary-mint text-primary-darkBlue rounded-md hover:bg-primary-teal hover:text-white transition-colors font-montserrat"
         >
           Create Project
         </button>
@@ -58,7 +58,7 @@ const Projects: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-end space-y-3 md:space-y-0 md:space-x-4">
           {/* Search filter */}
           <div className="flex-1">
-            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1 font-montserrat">
               Search
             </label>
             <input
@@ -67,20 +67,20 @@ const Projects: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by name or description"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-teal focus:border-primary-teal"
             />
           </div>
           
           {/* Platform filter */}
           <div className="w-full md:w-48">
-            <label htmlFor="platform" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="platform" className="block text-sm font-medium text-gray-700 mb-1 font-montserrat">
               Platform
             </label>
             <select
               id="platform"
               value={platformFilter}
               onChange={(e) => setPlatformFilter(e.target.value as Platform | 'All')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-teal focus:border-primary-teal"
             >
               {platforms.map(platform => (
                 <option key={platform} value={platform}>{platform}</option>
@@ -90,14 +90,14 @@ const Projects: React.FC = () => {
           
           {/* Status filter */}
           <div className="w-full md:w-48">
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1 font-montserrat">
               Status
             </label>
             <select
               id="status"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as Status | 'All')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-teal focus:border-primary-teal"
             >
               {statuses.map(status => (
                 <option key={status} value={status}>{status}</option>
@@ -119,7 +119,7 @@ const Projects: React.FC = () => {
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="px-6 py-4 border-b flex justify-between items-center">
-          <h2 className="text-lg font-medium text-gray-900">All Projects</h2>
+          <h2 className="text-lg font-medium text-gray-900 font-montserrat">All Projects</h2>
           <span className="text-sm text-gray-600">
             Showing {filteredProjects.length} of {projects.length} projects
           </span>
@@ -169,7 +169,7 @@ const Projects: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <Link to={`/projects/${project.id}`} className="text-blue-600 hover:text-blue-900">
+                      <Link to={`/projects/${project.id}`} className="text-primary-teal hover:text-primary-darkBlue font-montserrat">
                         View
                       </Link>
                     </td>

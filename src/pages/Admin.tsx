@@ -45,7 +45,7 @@ const Tab: React.FC<TabProps> = ({ label, active, onClick }) => {
     <button
       className={`px-4 py-2 font-medium text-sm rounded-t-lg ${
         active
-          ? 'bg-white text-blue-600 border-t border-l border-r border-gray-200'
+          ? 'bg-white text-primary-teal border-t border-l border-r border-gray-200'
           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
       }`}
       onClick={onClick}
@@ -138,7 +138,7 @@ const Admin: React.FC = () => {
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
               <h2 className="text-lg font-medium text-gray-900">User Management</h2>
               <button
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-primary-mint text-primary-darkBlue rounded-md hover:bg-primary-teal hover:text-white transition-colors font-montserrat"
                 onClick={handleAddUser}
               >
                 Add User
@@ -186,7 +186,7 @@ const Admin: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button 
-                          className="text-blue-600 hover:text-blue-900 mr-4"
+                          className="text-primary-teal hover:text-primary-darkBlue mr-4 font-montserrat"
                           onClick={() => handleEditUser(user)}
                         >
                           Edit
@@ -225,7 +225,7 @@ const Admin: React.FC = () => {
                       role="switch"
                       aria-checked={setting.enabled}
                     >
-                      <span className={`${setting.enabled ? 'bg-blue-600' : 'bg-gray-300'} block w-10 h-6 rounded-full transition-colors`}></span>
+                      <span className={`${setting.enabled ? 'bg-primary-mint' : 'bg-gray-300'} block w-10 h-6 rounded-full transition-colors`}></span>
                       <span 
                         className={`${setting.enabled ? 'translate-x-4' : 'translate-x-0'} absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform transform`}
                       ></span>
@@ -236,10 +236,10 @@ const Admin: React.FC = () => {
             </div>
             <div className="px-6 py-4 border-t">
               <button
-                className={`px-4 py-2 bg-blue-600 text-white rounded-md transition-colors ${
+                className={`px-4 py-2 bg-primary-mint text-primary-darkBlue rounded-md transition-colors font-montserrat ${
                   settingsChanged 
-                    ? 'hover:bg-blue-700 opacity-100' 
-                    : 'opacity-50 cursor-not-allowed'
+                  ? 'hover:bg-primary-teal hover:text-white opacity-100'
+                  : 'opacity-50 cursor-not-allowed'
                 }`}
                 onClick={saveSettings}
                 disabled={!settingsChanged}

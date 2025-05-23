@@ -13,7 +13,7 @@ const Layout: React.FC = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 font-sans">
       <Sidebar />
       <Navbar />
       <div className="pt-16 md:pl-64">

@@ -1,11 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProjectStore } from '../store/projectStore';
 import CreateProjectModal from '../components/modals/CreateProjectModal';
+import useAnimateOnScroll from '../hooks/useAnimateOnScroll';
 import {
   BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, RadialBarChart, RadialBar
 } from 'recharts';
+
+// Custom colors based on brand guidelines
+const chartColors = {
+  primary: '#013534', // darkBlue
+  mint: '#44D0B6',
+  teal: '#117378',
+  sage: '#83C149',
+  olive: '#324225',
+  coral: '#F38D8B',
+  sand: '#D3B888',
+  beige: '#E7D8AF',
+  paleGreen: '#C9D8AB',
+};
 
 // Mock data
 const usageData = {
@@ -64,9 +78,18 @@ const colors = {
 
 // Modern chart components using Recharts
 const ResourceUsageChart: React.FC = () => {
+  const chartRef = useAnimateOnScroll<HTMLDivElement>({
+    animationClass: 'animate-fade-in',
+    threshold: 0.1,
+    rootMargin: '0px 0px -100px 0px'
+  });
+
   return (
-    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-      <h3 className="text-gray-700 text-lg font-medium mb-4">Resource Usage Trends</h3>
+    <div 
+      ref={chartRef}
+      className="bg-white p-4 rounded-xl shadow-card border border-gray-100"
+    >
+      <h3 className="text-gray-700 text-lg font-medium font-montserrat mb-4">Resource Usage Trends</h3>
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart
           data={mockChartData.resourceUsage}
@@ -74,16 +97,16 @@ const ResourceUsageChart: React.FC = () => {
         >
           <defs>
             <linearGradient id="colorCpu" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={colors.cpu} stopOpacity={0.8} />
-              <stop offset="95%" stopColor={colors.cpu} stopOpacity={0.1} />
+              <stop offset="5%" stopColor={chartColors.primary} stopOpacity={0.8} />
+              <stop offset="95%" stopColor={chartColors.primary} stopOpacity={0.1} />
             </linearGradient>
             <linearGradient id="colorMemory" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={colors.memory} stopOpacity={0.8} />
-              <stop offset="95%" stopColor={colors.memory} stopOpacity={0.1} />
+              <stop offset="5%" stopColor={chartColors.mint} stopOpacity={0.8} />
+              <stop offset="95%" stopColor={chartColors.mint} stopOpacity={0.1} />
             </linearGradient>
             <linearGradient id="colorStorage" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={colors.storage} stopOpacity={0.8} />
-              <stop offset="95%" stopColor={colors.storage} stopOpacity={0.1} />
+              <stop offset="5%" stopColor={chartColors.teal} stopOpacity={0.8} />
+              <stop offset="95%" stopColor={chartColors.teal} stopOpacity={0.1} />
             </linearGradient>
           </defs>
           <XAxis dataKey="name" />
@@ -94,20 +117,21 @@ const ResourceUsageChart: React.FC = () => {
               backgroundColor: '#fff', 
               border: '1px solid #e2e8f0', 
               borderRadius: '0.5rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              fontFamily: "'Noto Sans', sans-serif"
             }}
             formatter={(value) => [`${value}%`, '']}
           />
           <Legend 
             verticalAlign="top" 
             height={36}
-            wrapperStyle={{ paddingBottom: '10px' }}
+            wrapperStyle={{ paddingBottom: '10px', fontFamily: "'Noto Sans', sans-serif" }}
           />
           <Area 
             type="monotone" 
             dataKey="cpu" 
             name="CPU" 
-            stroke={colors.cpu} 
+            stroke={chartColors.primary} 
             fillOpacity={1} 
             fill="url(#colorCpu)" 
             animationDuration={1500}
@@ -117,7 +141,7 @@ const ResourceUsageChart: React.FC = () => {
             type="monotone" 
             dataKey="memory" 
             name="Memory" 
-            stroke={colors.memory} 
+            stroke={chartColors.mint} 
             fillOpacity={1} 
             fill="url(#colorMemory)" 
             animationDuration={1500}
@@ -127,7 +151,7 @@ const ResourceUsageChart: React.FC = () => {
             type="monotone" 
             dataKey="storage" 
             name="Storage" 
-            stroke={colors.storage} 
+            stroke={chartColors.teal} 
             fillOpacity={1} 
             fill="url(#colorStorage)" 
             animationDuration={1500}
@@ -140,9 +164,19 @@ const ResourceUsageChart: React.FC = () => {
 };
 
 const ProjectActivityChart: React.FC = () => {
+  const chartRef = useAnimateOnScroll<HTMLDivElement>({
+    animationClass: 'animate-fade-in',
+    threshold: 0.1,
+    rootMargin: '0px 0px -100px 0px'
+  });
+
   return (
-    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-      <h3 className="text-gray-700 text-lg font-medium mb-4">Weekly Project Activity</h3>
+    <div 
+      ref={chartRef}
+      className="bg-white p-4 rounded-xl shadow-card border border-gray-100"
+      style={{ animationDelay: '100ms' }}
+    >
+      <h3 className="text-gray-700 text-lg font-medium font-montserrat mb-4">Weekly Project Activity</h3>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
           data={mockChartData.projectActivity}
@@ -156,25 +190,26 @@ const ProjectActivityChart: React.FC = () => {
               backgroundColor: '#fff', 
               border: '1px solid #e2e8f0', 
               borderRadius: '0.5rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              fontFamily: "'Noto Sans', sans-serif"
             }}
           />
           <Legend 
             verticalAlign="top" 
             height={36}
-            wrapperStyle={{ paddingBottom: '10px' }}
+            wrapperStyle={{ paddingBottom: '10px', fontFamily: "'Noto Sans', sans-serif" }}
           />
           <Bar 
             dataKey="deployments" 
             name="Deployments" 
-            fill={colors.deployments} 
+            fill={chartColors.primary} 
             radius={[4, 4, 0, 0]}
             animationDuration={1500}
           />
           <Bar 
             dataKey="updates" 
             name="Updates" 
-            fill={colors.updates} 
+            fill={chartColors.sage} 
             radius={[4, 4, 0, 0]}
             animationDuration={1500}
           />
@@ -185,9 +220,26 @@ const ProjectActivityChart: React.FC = () => {
 };
 
 const StorageDistributionChart: React.FC = () => {
+  const chartRef = useAnimateOnScroll<HTMLDivElement>({
+    animationClass: 'animate-fade-in',
+    threshold: 0.1,
+    rootMargin: '0px 0px -100px 0px'
+  });
+
+  const pieColors = [
+    chartColors.primary,
+    chartColors.mint,
+    chartColors.teal,
+    chartColors.sage,
+    chartColors.coral
+  ];
+
   return (
-    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-      <h3 className="text-gray-700 text-lg font-medium mb-4">Storage Distribution</h3>
+    <div 
+      ref={chartRef}
+      className="bg-white p-4 rounded-xl shadow-card border border-gray-100"
+    >
+      <h3 className="text-gray-700 text-lg font-medium font-montserrat mb-4">Storage Distribution</h3>
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
@@ -205,7 +257,7 @@ const StorageDistributionChart: React.FC = () => {
             animationDuration={1500}
           >
             {mockChartData.storageDistribution.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={colors.pieColors[index % colors.pieColors.length]} />
+              <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
             ))}
           </Pie>
           <Tooltip 
@@ -214,10 +266,14 @@ const StorageDistributionChart: React.FC = () => {
               backgroundColor: '#fff', 
               border: '1px solid #e2e8f0', 
               borderRadius: '0.5rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              fontFamily: "'Noto Sans', sans-serif"
             }}
           />
-          <Legend verticalAlign="bottom" />
+          <Legend 
+            verticalAlign="bottom" 
+            wrapperStyle={{ fontFamily: "'Noto Sans', sans-serif" }}
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>
@@ -225,9 +281,27 @@ const StorageDistributionChart: React.FC = () => {
 };
 
 const ServerLoadChart: React.FC = () => {
+  const chartRef = useAnimateOnScroll<HTMLDivElement>({
+    animationClass: 'animate-fade-in',
+    threshold: 0.1,
+    rootMargin: '0px 0px -100px 0px'
+  });
+
+  const radialColors = [
+    chartColors.primary,
+    chartColors.mint,
+    chartColors.teal,
+    chartColors.sage,
+    chartColors.coral
+  ];
+
   return (
-    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-      <h3 className="text-gray-700 text-lg font-medium mb-4">Server Load</h3>
+    <div 
+      ref={chartRef}
+      className="bg-white p-4 rounded-xl shadow-card border border-gray-100"
+      style={{ animationDelay: '100ms' }}
+    >
+      <h3 className="text-gray-700 text-lg font-medium font-montserrat mb-4">Server Load</h3>
       <ResponsiveContainer width="100%" height={300}>
         <RadialBarChart 
           cx="50%" 
@@ -240,7 +314,12 @@ const ServerLoadChart: React.FC = () => {
           endAngle={0}
         >
           <RadialBar
-            label={{ position: 'insideStart', fill: '#333', fontSize: 12 }}
+            label={{ 
+              position: 'insideStart', 
+              fill: '#333', 
+              fontSize: 12,
+              fontFamily: "'Noto Sans', sans-serif"
+            }}
             background
             dataKey="value"
             animationDuration={1500}
@@ -248,7 +327,7 @@ const ServerLoadChart: React.FC = () => {
             {mockChartData.serverLoad.map((entry, index) => (
               <Cell 
                 key={`cell-${index}`} 
-                fill={colors.radialColors[index % colors.radialColors.length]} 
+                fill={radialColors[index % radialColors.length]} 
                 name={entry.name}
               />
             ))}
@@ -259,10 +338,16 @@ const ServerLoadChart: React.FC = () => {
               backgroundColor: '#fff', 
               border: '1px solid #e2e8f0', 
               borderRadius: '0.5rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              fontFamily: "'Noto Sans', sans-serif"
             }}
           />
-          <Legend iconSize={10} layout="horizontal" verticalAlign="bottom" />
+          <Legend 
+            iconSize={10} 
+            layout="horizontal" 
+            verticalAlign="bottom"
+            wrapperStyle={{ fontFamily: "'Noto Sans', sans-serif" }}
+          />
         </RadialBarChart>
       </ResponsiveContainer>
     </div>
@@ -275,19 +360,30 @@ const StatCard: React.FC<{
   color: string;
   bgColor: string;
   icon: React.ReactNode;
+  delay?: number;
 }> = ({
   title,
   value,
   color,
   bgColor,
   icon,
+  delay = 0,
 }) => {
+  const cardRef = useAnimateOnScroll<HTMLDivElement>({
+    animationClass: 'animate-slide-up', 
+    rootMargin: '0px 0px -50px 0px'
+  });
+
   return (
-    <div className={`${bgColor} rounded-xl shadow-md p-6 transition-all duration-300 hover:shadow-lg border border-gray-100`}>
+    <div 
+      ref={cardRef}
+      className={`${bgColor} rounded-xl shadow-card p-6 transition-all duration-300 hover:shadow-hover border border-gray-100`}
+      style={{ animationDelay: `${delay}ms` }}
+    >
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="text-gray-600 text-sm font-medium mb-1">{title}</h3>
-          <p className={`${color} text-2xl font-bold`}>{value}</p>
+          <h3 className="text-gray-600 text-sm font-montserrat font-medium mb-1">{title}</h3>
+          <p className={`${color} text-2xl font-bold font-montserrat`}>{value}</p>
         </div>
         <div className={`rounded-full p-3 ${bgColor} bg-opacity-40`}>
           {icon}
@@ -299,44 +395,58 @@ const StatCard: React.FC<{
 
 const ProjectCard: React.FC<{ 
   project: any;
-}> = ({ project }) => (
-  <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-gray-100">
-    <div className="p-5">
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
-        <span className={`px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full 
-          ${project.status === 'Active' ? 'bg-green-100 text-green-800' : 
-            project.status === 'Inactive' ? 'bg-red-100 text-red-800' : 
-            'bg-yellow-100 text-yellow-800'}`}
-        >
-          {project.status}
-        </span>
-      </div>
-      <p className="text-sm text-gray-500 mb-4 line-clamp-2">{project.description}</p>
-      
-      <div className="flex items-center justify-between">
-        <div className="flex items-center text-sm text-gray-600">
-          <span className="inline-block bg-blue-100 rounded-full p-1 mr-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-            </svg>
+  delay?: number;
+}> = ({ project, delay = 0 }) => {
+  const cardRef = useAnimateOnScroll<HTMLDivElement>({
+    animationClass: 'animate-slide-up',
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  });
+
+  return (
+    <div 
+      ref={cardRef}
+      className="bg-white rounded-xl shadow-card hover:shadow-hover transition-shadow duration-300 overflow-hidden border border-gray-100"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div className="p-5">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="text-lg font-semibold text-primary-darkBlue font-montserrat">{project.name}</h3>
+          <span className={`px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full 
+            ${project.status === 'Active' ? 'bg-secondary-sage bg-opacity-20 text-secondary-olive' : 
+              project.status === 'Inactive' ? 'bg-secondary-coral bg-opacity-20 text-secondary-coral' : 
+              'bg-secondary-sand bg-opacity-20 text-secondary-brown'}`}
+          >
+            {project.status}
           </span>
-          {project.owner}
         </div>
-        <Link to={`/projects/${project.id}`} 
-          className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center">
-          View Details
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-          </svg>
-        </Link>
+        <p className="text-sm text-gray-500 mb-4 line-clamp-2">{project.description}</p>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center text-sm text-gray-600">
+            <span className="inline-block bg-primary-mint bg-opacity-20 rounded-full p-1 mr-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary-teal" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+              </svg>
+            </span>
+            {project.owner}
+          </div>
+          <Link to={`/projects/${project.id}`} 
+            className="text-sm font-medium text-primary-teal hover:text-primary-darkBlue flex items-center font-montserrat"
+          >
+            View Details
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+            </svg>
+          </Link>
+        </div>
+      </div>
+      <div className="border-t border-gray-100 px-5 py-3 bg-gray-50 text-xs text-gray-500">
+        Platform: {project.platform}
       </div>
     </div>
-    <div className="border-t border-gray-100 px-5 py-3 bg-gray-50 text-xs text-gray-500">
-      Platform: {project.platform}
-    </div>
-  </div>
-);
+  );
+};
 
 const Dashboard: React.FC = () => {
   const { projects } = useProjectStore();
@@ -344,19 +454,35 @@ const Dashboard: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const navigate = useNavigate();
 
+  // Animation refs
+  const headerRef = useAnimateOnScroll<HTMLDivElement>({ animationClass: 'animate-fade-in' });
+  const statsRef = useAnimateOnScroll<HTMLDivElement>({ 
+    animationClass: 'animate-slide-up',
+    threshold: 0.2, 
+    rootMargin: '0px 0px -50px 0px' 
+  });
+  const usageStatsRef = useAnimateOnScroll<HTMLDivElement>({ 
+    animationClass: 'animate-scale-in',
+    threshold: 0.1, 
+    rootMargin: '0px 0px -50px 0px' 
+  });
+
   const totalProjects = projects.length;
   const activeProjects = projects.filter(project => project.status === 'Active').length;
   const pendingProjects = projects.filter(project => project.status === 'Pending').length;
 
   return (
     <div className="pb-8 relative">
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-md mb-8 p-6 text-white">
-        <h1 className="text-2xl font-bold mb-2">Welcome to Synapse Dashboard</h1>
-        <p className="text-blue-100 mb-6">Manage and monitor your cloud infrastructure projects</p>
+      <div 
+        ref={headerRef}
+        className="bg-gradient-to-r from-primary-darkBlue to-primary-teal rounded-xl shadow-lg mb-8 p-6 text-white"
+      >
+        <h1 className="text-2xl text-primary-mint font-bold font-montserrat mb-2">Welcome to Synapse Dashboard</h1>
+        <p className="text-primary-mint mb-6 opacity-90">Manage and monitor your cloud infrastructure projects</p>
         
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="px-4 py-2 bg-white text-blue-600 rounded-md hover:bg-blue-50 transition-colors shadow-sm flex items-center"
+          className="px-4 py-2 bg-primary-mint text-primary-darkBlue rounded-md hover:bg-white transition-colors duration-300 shadow-sm flex items-center font-montserrat font-medium"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -365,14 +491,15 @@ const Dashboard: React.FC = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <StatCard 
           title="Total Projects" 
           value={totalProjects} 
-          color="text-blue-600" 
+          color="text-primary-darkBlue" 
           bgColor="bg-white"
+          delay={100}
           icon={
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary-mint" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
           }
@@ -380,10 +507,11 @@ const Dashboard: React.FC = () => {
         <StatCard 
           title="Active Projects" 
           value={activeProjects} 
-          color="text-green-600" 
+          color="text-primary-teal" 
           bgColor="bg-white"
+          delay={200}
           icon={
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-secondary-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           }
@@ -391,10 +519,11 @@ const Dashboard: React.FC = () => {
         <StatCard 
           title="Pending Projects" 
           value={pendingProjects} 
-          color="text-amber-600" 
+          color="text-secondary-coral" 
           bgColor="bg-white"
+          delay={300}
           icon={
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-secondary-sand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           }
@@ -402,47 +531,50 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Usage Statistics Section */}
-      <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 mb-8">
+      <div 
+        ref={usageStatsRef}
+        className="bg-white rounded-xl shadow-card overflow-hidden border border-gray-100 mb-8"
+      >
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h2 className="text-lg font-medium text-gray-900">System Usage Statistics</h2>
+          <h2 className="text-lg font-medium font-montserrat text-primary-darkBlue">System Usage Statistics</h2>
           <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-primary-teal text-white rounded-md hover:bg-primary-darkBlue transition-colors font-montserrat"
           >
             Generate Report
           </button>
         </div>
         <div className="p-6 grid grid-cols-1 md:grid-cols-5 gap-6">
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-            <div className="text-blue-500 text-sm font-medium uppercase tracking-wide">Projects</div>
+          <div className="bg-primary-mint bg-opacity-10 rounded-lg p-4 border border-primary-mint border-opacity-20">
+            <div className="text-primary-teal text-sm font-montserrat font-medium uppercase tracking-wide">Projects</div>
             <div className="mt-2 flex items-baseline">
-              <span className="text-3xl font-semibold text-blue-800">{usageData.projects}</span>
-              <span className="ml-2 text-sm text-blue-600">Total</span>
+              <span className="text-3xl font-semibold font-montserrat text-primary-darkBlue">{usageData.projects}</span>
+              <span className="ml-2 text-sm text-primary-teal">Total</span>
             </div>
           </div>
-          <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
-            <div className="text-indigo-500 text-sm font-medium uppercase tracking-wide">Virtual Machines</div>
+          <div className="bg-secondary-sage bg-opacity-10 rounded-lg p-4 border border-secondary-sage border-opacity-20">
+            <div className="text-secondary-olive text-sm font-montserrat font-medium uppercase tracking-wide">Virtual Machines</div>
             <div className="mt-2 flex items-baseline">
-              <span className="text-3xl font-semibold text-indigo-800">{usageData.vms}</span>
-              <span className="ml-2 text-sm text-indigo-600">Running</span>
+              <span className="text-3xl font-semibold font-montserrat text-primary-darkBlue">{usageData.vms}</span>
+              <span className="ml-2 text-sm text-secondary-olive">Running</span>
             </div>
           </div>
-          <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
-            <div className="text-purple-500 text-sm font-medium uppercase tracking-wide">Storage Used</div>
+          <div className="bg-secondary-sand bg-opacity-10 rounded-lg p-4 border border-secondary-sand border-opacity-20">
+            <div className="text-secondary-brown text-sm font-montserrat font-medium uppercase tracking-wide">Storage Used</div>
             <div className="mt-2 flex items-baseline">
-              <span className="text-3xl font-semibold text-purple-800">{usageData.storage}</span>
+              <span className="text-3xl font-semibold font-montserrat text-primary-darkBlue">{usageData.storage}</span>
             </div>
           </div>
-          <div className="bg-pink-50 rounded-lg p-4 border border-pink-100">
-            <div className="text-pink-500 text-sm font-medium uppercase tracking-wide">Networks</div>
+          <div className="bg-secondary-coral bg-opacity-10 rounded-lg p-4 border border-secondary-coral border-opacity-20">
+            <div className="text-secondary-coral text-sm font-montserrat font-medium uppercase tracking-wide">Networks</div>
             <div className="mt-2 flex items-baseline">
-              <span className="text-3xl font-semibold text-pink-800">{usageData.networks}</span>
+              <span className="text-3xl font-semibold font-montserrat text-primary-darkBlue">{usageData.networks}</span>
             </div>
           </div>
-          <div className="bg-green-50 rounded-lg p-4 border border-green-100">
-            <div className="text-green-500 text-sm font-medium uppercase tracking-wide">Active Users</div>
+          <div className="bg-secondary-paleGreen bg-opacity-10 rounded-lg p-4 border border-secondary-paleGreen border-opacity-20">
+            <div className="text-secondary-olive text-sm font-montserrat font-medium uppercase tracking-wide">Active Users</div>
             <div className="mt-2 flex items-baseline">
-              <span className="text-3xl font-semibold text-green-800">{usageData.activeUsers}</span>
-              <span className="ml-2 text-sm text-green-600">Online</span>
+              <span className="text-3xl font-semibold font-montserrat text-primary-darkBlue">{usageData.activeUsers}</span>
+              <span className="ml-2 text-sm text-secondary-olive">Online</span>
             </div>
           </div>
         </div>
@@ -460,13 +592,16 @@ const Dashboard: React.FC = () => {
         <ServerLoadChart />
       </div>
 
-      <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+      <div 
+        className="bg-white rounded-xl shadow-card overflow-hidden border border-gray-100"
+        ref={useAnimateOnScroll<HTMLDivElement>({ animationClass: 'animate-fade-in', threshold: 0.1 })}
+      >
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-          <h2 className="text-lg font-medium text-gray-900">Recent Projects</h2>
+          <h2 className="text-lg font-medium font-montserrat text-primary-darkBlue">Recent Projects</h2>
           <div className="flex space-x-2">
             <button 
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-md ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`p-2 rounded-md ${viewMode === 'grid' ? 'bg-primary-mint bg-opacity-20 text-primary-teal' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -474,7 +609,7 @@ const Dashboard: React.FC = () => {
             </button>
             <button 
               onClick={() => setViewMode('table')}
-              className={`p-2 rounded-md ${viewMode === 'table' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`p-2 rounded-md ${viewMode === 'table' ? 'bg-primary-mint bg-opacity-20 text-primary-teal' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
@@ -487,8 +622,8 @@ const Dashboard: React.FC = () => {
           <div className="p-6">
             {projects.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {projects.map((project) => (
-                  <ProjectCard key={project.id} project={project} />
+                {projects.map((project, index) => (
+                  <ProjectCard key={project.id} project={project} delay={index * 100} />
                 ))}
               </div>
             ) : (
@@ -496,11 +631,11 @@ const Dashboard: React.FC = () => {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <h3 className="text-base font-medium text-gray-900 mb-1">No projects found</h3>
+                <h3 className="text-base font-medium font-montserrat text-primary-darkBlue mb-1">No projects found</h3>
                 <p className="text-gray-500 mb-4">Get started by creating your first project</p>
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-primary-mint text-primary-darkBlue rounded-md hover:bg-primary-teal hover:text-white transition-colors font-montserrat"
                 >
                   Create Project
                 </button>
@@ -512,19 +647,19 @@ const Dashboard: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium font-montserrat text-gray-500 uppercase tracking-wider">
                     Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium font-montserrat text-gray-500 uppercase tracking-wider">
                     Platform
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium font-montserrat text-gray-500 uppercase tracking-wider">
                     Owner
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium font-montserrat text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium font-montserrat text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -534,7 +669,7 @@ const Dashboard: React.FC = () => {
                   projects.map((project) => (
                     <tr key={project.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{project.name}</div>
+                        <div className="text-sm font-medium text-primary-darkBlue font-montserrat">{project.name}</div>
                         <div className="text-sm text-gray-500">{project.description}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -545,15 +680,15 @@ const Dashboard: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                          ${project.status === 'Active' ? 'bg-green-100 text-green-800' : 
-                            project.status === 'Inactive' ? 'bg-red-100 text-red-800' : 
-                            'bg-yellow-100 text-yellow-800'}`}
+                          ${project.status === 'Active' ? 'bg-secondary-sage bg-opacity-20 text-secondary-olive' : 
+                            project.status === 'Inactive' ? 'bg-secondary-coral bg-opacity-20 text-secondary-coral' : 
+                            'bg-secondary-sand bg-opacity-20 text-secondary-brown'}`}
                         >
                           {project.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Link to={`/projects/${project.id}`} className="text-blue-600 hover:text-blue-900 flex items-center">
+                        <Link to={`/projects/${project.id}`} className="text-primary-teal hover:text-primary-darkBlue flex items-center font-montserrat">
                           View
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
@@ -569,11 +704,11 @@ const Dashboard: React.FC = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
-                        <h3 className="text-base font-medium text-gray-900 mb-1">No projects found</h3>
+                        <h3 className="text-base font-medium font-montserrat text-primary-darkBlue mb-1">No projects found</h3>
                         <p className="text-sm text-gray-500 mb-4">Get started by creating your first project</p>
                         <button
                           onClick={() => setIsCreateModalOpen(true)}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                          className="px-4 py-2 bg-primary-mint text-primary-darkBlue rounded-md hover:bg-primary-teal hover:text-white transition-colors font-montserrat"
                         >
                           Create Project
                         </button>

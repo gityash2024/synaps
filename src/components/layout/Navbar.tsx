@@ -17,17 +17,17 @@ const Navbar: React.FC = () => {
         {user && (
           <>
             <div className="flex items-center">
-              <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center mr-2">
-                <span className="text-blue-600 font-medium">
+              <div className="h-8 w-8 rounded-lg bg-primary-mint bg-opacity-20 flex items-center justify-center mr-2">
+                <span className="text-primary-darkBlue font-montserrat font-medium">
                   {user.name.charAt(0).toUpperCase()}
                 </span>
               </div>
-              <span className="text-sm font-medium text-gray-700">{user.name}</span>
+              <span className="text-sm font-medium text-primary-darkBlue font-montserrat">{user.name}</span>
             </div>
             
             <button
               onClick={() => setShowLogoutModal(true)}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors duration-200 flex items-center"
+              className="px-4 py-2 text-sm font-medium text-white bg-primary-darkBlue rounded-md hover:bg-opacity-90 transition-colors duration-200 flex items-center"
             >
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 

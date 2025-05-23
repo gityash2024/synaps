@@ -18,13 +18,13 @@ const NavItem: React.FC<NavItemProps> = ({ to, label, isActive, onClick, icon })
       to={to}
       className={`flex items-center px-4 py-3 rounded-lg transition-colors ${
         isActive 
-          ? 'bg-blue-100 text-blue-700' 
+          ? 'bg-primary-mint bg-opacity-20 text-primary-darkBlue font-medium' 
           : 'text-gray-700 hover:bg-gray-100'
       }`}
       onClick={onClick}
     >
       {icon && <span className="mr-3">{icon}</span>}
-      <span>{label}</span>
+      <span className="font-montserrat">{label}</span>
     </Link>
   );
 };
@@ -66,7 +66,7 @@ const Sidebar: React.FC = () => {
         onClick={toggleSidebar}
         aria-label="Toggle sidebar"
       >
-        <Bars3Icon className="w-6 h-6 text-gray-700" />
+        <Bars3Icon className="w-6 h-6 text-primary-darkBlue" />
       </button>
       
       {/* Sidebar */}
@@ -75,16 +75,15 @@ const Sidebar: React.FC = () => {
       }`}>
         <div className="flex flex-col h-full">
           {/* Sidebar header */}
-          <div className="flex items-center justify-between px-4 py-4 border-b">
+          <div className="flex items-center justify-between px-4 py-5 border-b border-gray-100">
             <Link to="/" className="flex items-center">
-              <svg width="40" height="40" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-                <rect width="120" height="120" rx="20" fill="#EBF4FF" />
-                <path d="M36 84L60 36L84 84H36Z" fill="#3B82F6" />
-                <circle cx="60" cy="60" r="20" fill="#1E40AF" />
-                <path d="M40 40L80 80" stroke="#3B82F6" strokeWidth="4" />
-                <path d="M40 80L80 40" stroke="#3B82F6" strokeWidth="4" />
-              </svg>
-              <span className="text-xl font-bold text-blue-600">Synapse</span>
+              <div className="w-10 h-10 rounded-lg bg-primary-darkBlue mr-3 flex items-center justify-center">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 16L10 6L16 16H4Z" fill="#44D0B6" />
+                  <circle cx="10" cy="11" r="3" fill="#FFFFFF" />
+                </svg>
+              </div>
+              <span className="text-xl font-bold font-montserrat text-primary-darkBlue">Synapse</span>
             </Link>
             <button 
               className="md:hidden p-1 rounded-md hover:bg-gray-100"
@@ -96,7 +95,7 @@ const Sidebar: React.FC = () => {
           </div>
           
           {/* Navigation Links */}
-          <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+          <nav className="flex-1 px-3 py-5 space-y-1.5 overflow-y-auto">
             <NavItem 
               to="/dashboard" 
               label="Dashboard" 
@@ -144,10 +143,10 @@ const Sidebar: React.FC = () => {
           </nav>
           
           {/* Logout button at bottom */}
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-gray-100">
             <button
               onClick={handleLogoutClick}
-              className="w-full flex items-center px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+              className="w-full flex items-center px-4 py-3 rounded-lg text-primary-darkBlue font-montserrat hover:bg-red-50 transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

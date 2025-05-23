@@ -7,7 +7,7 @@ const FloatingContactButton: React.FC = () => {
   return (
     <button
       onClick={() => navigate('/contact-us')}
-      className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all duration-300 hover:shadow-xl z-50 flex items-center justify-center"
+      className="fixed bottom-6 right-6 bg-primary-mint hover:bg-primary-teal text-white rounded-full p-4 shadow-lg transition-all duration-300 hover:shadow-xl z-50 flex items-center justify-center"
       aria-label="Contact Support"
     >
       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
