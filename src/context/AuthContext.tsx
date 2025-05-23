@@ -27,7 +27,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (email === 'email@demo.com' && password === '123456789') {
       const userData: User = {
         email,
-        name: 'Synapse User',
+        name: 'Synapses User',
       };
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));

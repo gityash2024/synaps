@@ -31,7 +31,7 @@ const initialUsers = [
 const initialSettings = [
   { id: 'notif', name: 'Email Notifications', enabled: true, description: 'Send email notifications for important events' },
   { id: 'mfa', name: 'Multi-Factor Authentication', enabled: false, description: 'Require MFA for all users' },
-  { id: 'apiAccess', name: 'API Access', enabled: true, description: 'Allow access to the Synapse API' },
+  { id: 'apiAccess', name: 'API Access', enabled: true, description: 'Allow access to the Synapses API' },
   { id: 'audit', name: 'Audit Logging', enabled: true, description: 'Log all user actions for security auditing' },
 ];
 

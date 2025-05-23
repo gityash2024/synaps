@@ -477,7 +477,7 @@ const Dashboard: React.FC = () => {
         ref={headerRef}
         className="bg-gradient-to-r from-primary-darkBlue to-primary-teal rounded-xl shadow-lg mb-8 p-6 text-white"
       >
-        <h1 className="text-2xl text-primary-mint font-bold font-montserrat mb-2">Welcome to Synapse Dashboard</h1>
+        <h1 className="text-2xl text-primary-mint font-bold font-montserrat mb-2">Welcome to Synapses Dashboard</h1>
         <p className="text-primary-mint mb-6 opacity-90">Manage and monitor your cloud infrastructure projects</p>
       </div>
 

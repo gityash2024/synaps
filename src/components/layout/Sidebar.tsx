@@ -244,7 +244,7 @@ const Sidebar: React.FC = () => {
                 </svg>
               </div>
               <span className="ml-3 text-xl font-bold font-montserrat text-white transition-opacity duration-300 ease-in-out">
-                Synapse
+                Synapses
               </span>
             </Link>
             
@@ -315,7 +315,7 @@ const Sidebar: React.FC = () => {
                 S
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-white">Synapse User</p>
+                <p className="text-sm font-medium text-white">Synapses User</p>
                 <p className="text-xs text-gray-400">admin@synapse.com</p>
               </div>
             </div>

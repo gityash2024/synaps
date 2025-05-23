@@ -1,6 +1,6 @@
-# Synapse - Cloud Infrastructure Management Platform
+# Synapses - Cloud Infrastructure Management Platform
 
-Synapse is a modern frontend React application for managing cloud infrastructure resources. It allows users to create projects, deploy virtual machines, configure networks, and manage data disks across different cloud platforms.
+Synapses is a modern frontend React application for managing cloud infrastructure resources. It allows users to create projects, deploy virtual machines, configure networks, and manage data disks across different cloud platforms.
 
 ## Features
 
@@ -42,8 +42,8 @@ Synapse is a modern frontend React application for managing cloud infrastructure
 
 1. Clone the repository
 ```
-git clone https://github.com/yourusername/Synapse.git
-cd Synapse
+git clone https://github.com/yourusername/Synapses.git
+cd Synapses
 ```
 
 2. Install dependencies
@@ -67,7 +67,7 @@ Use the following demo credentials to log in:
 ## Project Structure
 
 ```
-Synapse/
+Synapses/
 ├── public/
 ├── src/
 │   ├── components/
@@ -109,4 +109,4 @@ Synapse/
 
 ## License
 
-This project is licensed under the MIT License. # Synapse
+This project is licensed under the MIT License. # Synapses

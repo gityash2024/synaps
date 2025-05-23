@@ -76,7 +76,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
       region: 'us-east-1',
       projectType: 'default',
       billingOrganization: 'Demo Organization',
-      owner: 'Synapse User',
+      owner: 'Synapses User',
       status: 'Active',
       networks: [
         {
