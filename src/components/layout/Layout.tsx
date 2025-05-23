@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import FloatingContactButton from '../common/FloatingContactButton';
 
 const Layout: React.FC = () => {
   const location = useLocation();
@@ -20,6 +21,7 @@ const Layout: React.FC = () => {
           <Outlet />
         </main>
       </div>
+      <FloatingContactButton />
     </div>
   );
 };
