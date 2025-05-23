@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProjectStore, Network, VirtualMachine, DataDisk } from '../store/projectStore';
 import ServiceCatalogModal from '../components/modals/ServiceCatalogModal';
+import ConfirmationModal from '../components/modals/ConfirmationModal';
 import { 
   PlusIcon, 
   ServerIcon, 
@@ -9,7 +10,8 @@ import {
   ShieldCheckIcon, 
   ArchiveBoxIcon,
   CircleStackIcon, 
-  DocumentDuplicateIcon
+  DocumentDuplicateIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
@@ -37,6 +39,13 @@ const ProjectDetails: React.FC = () => {
   const [isServiceCatalogOpen, setIsServiceCatalogOpen] = useState(false);
   // Currently active tab
   const [activeTab, setActiveTab] = useState('network');
+  
+  // Resource removal confirmation
+  const [resourceToRemove, setResourceToRemove] = useState<{
+    type: 'network' | 'virtualMachine' | 'dataDisk';
+    id: string;
+    name: string;
+  } | null>(null);
 
   useEffect(() => {
     if (projectId) {
@@ -68,9 +77,14 @@ const ProjectDetails: React.FC = () => {
     { id: 'storage', label: 'Storage', icon: <DocumentDuplicateIcon className="h-5 w-5" /> },
   ];
 
-  const handleResourceRemove = (resourceType: 'network' | 'virtualMachine' | 'dataDisk', resourceId: string) => {
-    if (projectId) {
-      removeResource(projectId, resourceType, resourceId);
+  const confirmResourceRemoval = (type: 'network' | 'virtualMachine' | 'dataDisk', id: string, name: string) => {
+    setResourceToRemove({ type, id, name });
+  };
+
+  const handleResourceRemove = () => {
+    if (resourceToRemove && projectId) {
+      removeResource(projectId, resourceToRemove.type, resourceToRemove.id);
+      setResourceToRemove(null);
     }
   };
 
@@ -113,10 +127,11 @@ const ProjectDetails: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
                           <button
-                            onClick={() => handleResourceRemove('network', network.id)}
+                            onClick={() => confirmResourceRemoval('network', network.id, network.name)}
                             className="text-secondary-coral hover:text-red-700 font-medium font-montserrat"
+                            title="Remove network"
                           >
-                            Remove
+                            <TrashIcon className="h-5 w-5 inline" />
                           </button>
                         </td>
                       </tr>
@@ -179,10 +194,11 @@ const ProjectDetails: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
                           <button
-                            onClick={() => handleResourceRemove('virtualMachine', vm.id)}
+                            onClick={() => confirmResourceRemoval('virtualMachine', vm.id, vm.name)}
                             className="text-secondary-coral hover:text-red-700 font-medium font-montserrat"
+                            title="Remove virtual machine"
                           >
-                            Remove
+                            <TrashIcon className="h-5 w-5 inline" />
                           </button>
                         </td>
                       </tr>
@@ -227,10 +243,11 @@ const ProjectDetails: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
                           <button
-                            onClick={() => handleResourceRemove('dataDisk', disk.id)}
+                            onClick={() => confirmResourceRemoval('dataDisk', disk.id, disk.name)}
                             className="text-secondary-coral hover:text-red-700 font-medium font-montserrat"
+                            title="Remove disk"
                           >
-                            Remove
+                            <TrashIcon className="h-5 w-5 inline" />
                           </button>
                         </td>
                       </tr>
@@ -369,6 +386,19 @@ const ProjectDetails: React.FC = () => {
         onClose={() => setIsServiceCatalogOpen(false)}
         projectId={projectId || ''}
       />
+
+      {/* Confirmation Modal for Resource Removal */}
+      {resourceToRemove && (
+        <ConfirmationModal
+          isOpen={!!resourceToRemove}
+          onClose={() => setResourceToRemove(null)}
+          onConfirm={handleResourceRemove}
+          title="Remove Resource"
+          message={`Are you sure you want to remove ${resourceToRemove.name}? This action cannot be undone.`}
+          confirmButtonText="Remove"
+          confirmButtonClass="bg-secondary-coral hover:bg-red-700"
+        />
+      )}
     </div>
   );
 };

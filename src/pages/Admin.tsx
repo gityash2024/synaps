@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import UserFormModal from '../components/modals/UserFormModal';
 import DeleteConfirmModal from '../components/modals/DeleteConfirmModal';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 // Define user interface
 interface User {
@@ -184,19 +185,23 @@ const Admin: React.FC = () => {
                           {user.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button 
-                          className="text-primary-teal hover:text-primary-darkBlue mr-4 font-montserrat"
-                          onClick={() => handleEditUser(user)}
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          className="text-red-600 hover:text-red-900"
-                          onClick={() => handleDeleteUser(user)}
-                        >
-                          Delete
-                        </button>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-4">
+                          <button 
+                            className="text-primary-teal hover:text-primary-darkBlue"
+                            onClick={() => handleEditUser(user)}
+                            title="Edit user"
+                          >
+                            <PencilIcon className="h-5 w-5" />
+                          </button>
+                          <button 
+                            className="text-secondary-coral hover:text-red-700"
+                            onClick={() => handleDeleteUser(user)}
+                            title="Delete user"
+                          >
+                            <TrashIcon className="h-5 w-5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

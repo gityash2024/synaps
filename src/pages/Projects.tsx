@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { useProjectStore, Platform, Status } from '../store/projectStore';
 import CreateProjectModal from '../components/modals/CreateProjectModal';
 import ConfirmationModal from '../components/modals/ConfirmationModal';
+import { EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 const Projects: React.FC = () => {
   const { projects, deleteProject } = useProjectStore();
@@ -181,18 +182,20 @@ const Projects: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
-                      <div className="flex items-center justify-end space-x-2">
+                      <div className="flex items-center justify-end space-x-4">
                         <Link 
                           to={`/projects/${project.id}`} 
-                          className="text-primary-teal hover:text-primary-darkBlue transition-colors font-montserrat"
+                          className="text-primary-teal hover:text-primary-darkBlue transition-colors"
+                          title="View project"
                         >
-                          View
+                          <EyeIcon className="h-5 w-5" />
                         </Link>
                         <button
                           onClick={() => setDeletingProjectId(project.id)}
-                          className="text-secondary-coral hover:text-red-700 transition-colors font-montserrat ml-4"
+                          className="text-secondary-coral hover:text-red-700 transition-colors"
+                          title="Delete project"
                         >
-                          Delete
+                          <TrashIcon className="h-5 w-5" />
                         </button>
                       </div>
                     </td>
