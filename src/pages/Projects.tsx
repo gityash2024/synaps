@@ -1,11 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useProjectStore, Platform, Status } from '../store/projectStore';
 import CreateProjectModal from '../components/modals/CreateProjectModal';
+import ConfirmationModal from '../components/modals/ConfirmationModal';
 
 const Projects: React.FC = () => {
-  const { projects } = useProjectStore();
+  const { projects, deleteProject } = useProjectStore();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
   
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,6 +42,15 @@ const Projects: React.FC = () => {
     setSearchQuery('');
     setPlatformFilter('All');
     setStatusFilter('All');
+  };
+
+  // Handle project deletion
+  const handleDeleteProject = () => {
+    if (deletingProjectId) {
+      deleteProject(deletingProjectId);
+      toast.success('Project deleted successfully');
+      setDeletingProjectId(null);
+    }
   };
 
   return (
@@ -140,7 +152,7 @@ const Projects: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -168,10 +180,21 @@ const Projects: React.FC = () => {
                         {project.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <Link to={`/projects/${project.id}`} className="text-primary-teal hover:text-primary-darkBlue font-montserrat">
-                        View
-                      </Link>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
+                      <div className="flex items-center justify-end space-x-2">
+                        <Link 
+                          to={`/projects/${project.id}`} 
+                          className="text-primary-teal hover:text-primary-darkBlue transition-colors font-montserrat"
+                        >
+                          View
+                        </Link>
+                        <button
+                          onClick={() => setDeletingProjectId(project.id)}
+                          className="text-secondary-coral hover:text-red-700 transition-colors font-montserrat ml-4"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -189,10 +212,24 @@ const Projects: React.FC = () => {
         </div>
       </div>
 
+      {/* Create Project Modal */}
       {isCreateModalOpen && (
         <CreateProjectModal 
           isOpen={isCreateModalOpen} 
           onClose={() => setIsCreateModalOpen(false)} 
+        />
+      )}
+
+      {/* Confirm Delete Modal */}
+      {deletingProjectId && (
+        <ConfirmationModal
+          isOpen={!!deletingProjectId}
+          onClose={() => setDeletingProjectId(null)}
+          onConfirm={handleDeleteProject}
+          title="Delete Project"
+          message="Are you sure you want to delete this project? This action cannot be undone."
+          confirmButtonText="Delete"
+          confirmButtonClass="bg-secondary-coral hover:bg-red-700"
         />
       )}
     </div>

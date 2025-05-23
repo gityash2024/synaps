@@ -4,6 +4,17 @@ export type Platform = 'AWS' | 'Azure' | 'Private Cloud' | 'VMware';
 export type OSType = 'Ubuntu' | 'Windows Server';
 export type Status = 'Active' | 'Inactive' | 'Pending';
 
+// Mock backend data - will come from API in real implementation
+export const mockPlatforms: Platform[] = ['AWS', 'Azure', 'Private Cloud', 'VMware'];
+export const mockRegions = {
+  'AWS': ['us-east-1', 'us-west-1', 'eu-west-1', 'ap-southeast-1'],
+  'Azure': ['eastus', 'westus', 'westeurope', 'southeastasia'],
+  'Private Cloud': ['dc-1', 'dc-2', 'dc-3'],
+  'VMware': ['cluster-1', 'cluster-2', 'cluster-3']
+};
+
+export type ProjectType = 'default' | 'custom';
+
 export interface Network {
   id: string;
   name: string;
@@ -33,6 +44,8 @@ export interface Project {
   name: string;
   description: string;
   platform: Platform;
+  region?: string;
+  projectType?: ProjectType;
   billingOrganization: string;
   owner: string;
   status: Status;
@@ -45,10 +58,12 @@ interface ProjectState {
   projects: Project[];
   selectedProject: Project | null;
   addProject: (project: Omit<Project, 'id' | 'networks' | 'virtualMachines' | 'dataDisks'>) => void;
+  deleteProject: (projectId: string) => void;
   setSelectedProject: (projectId: string) => void;
   addNetwork: (projectId: string, network: Omit<Network, 'id'>) => void;
   addVirtualMachine: (projectId: string, vm: Omit<VirtualMachine, 'id'>) => void;
   addDataDisk: (projectId: string, disk: Omit<DataDisk, 'id'>) => void;
+  removeResource: (projectId: string, resourceType: 'network' | 'virtualMachine' | 'dataDisk', resourceId: string) => void;
 }
 
 export const useProjectStore = create<ProjectState>((set) => ({
@@ -58,6 +73,8 @@ export const useProjectStore = create<ProjectState>((set) => ({
       name: 'Sample Cloud Project',
       description: 'A sample cloud infrastructure project',
       platform: 'AWS',
+      region: 'us-east-1',
+      projectType: 'default',
       billingOrganization: 'Demo Organization',
       owner: 'Demo User',
       status: 'Active',
@@ -101,6 +118,19 @@ export const useProjectStore = create<ProjectState>((set) => ({
       dataDisks: []
     };
     return { projects: [...state.projects, newProject] };
+  }),
+  
+  deleteProject: (projectId) => set((state) => {
+    const updatedProjects = state.projects.filter(project => project.id !== projectId);
+    // If the selected project is being deleted, set selectedProject to null
+    const updatedSelectedProject = state.selectedProject && state.selectedProject.id === projectId 
+      ? null 
+      : state.selectedProject;
+    
+    return { 
+      projects: updatedProjects,
+      selectedProject: updatedSelectedProject
+    };
   }),
   
   setSelectedProject: (projectId) => set((state) => {
@@ -182,4 +212,36 @@ export const useProjectStore = create<ProjectState>((set) => ({
     }
     return state;
   }),
+  
+  removeResource: (projectId, resourceType, resourceId) => set((state) => {
+    const projects = [...state.projects];
+    const projectIndex = projects.findIndex(p => p.id === projectId);
+    
+    if (projectIndex >= 0) {
+      if (resourceType === 'network') {
+        projects[projectIndex] = {
+          ...projects[projectIndex],
+          networks: projects[projectIndex].networks.filter(net => net.id !== resourceId)
+        };
+      } else if (resourceType === 'virtualMachine') {
+        projects[projectIndex] = {
+          ...projects[projectIndex],
+          virtualMachines: projects[projectIndex].virtualMachines.filter(vm => vm.id !== resourceId)
+        };
+      } else if (resourceType === 'dataDisk') {
+        projects[projectIndex] = {
+          ...projects[projectIndex],
+          dataDisks: projects[projectIndex].dataDisks.filter(disk => disk.id !== resourceId)
+        };
+      }
+      
+      // Update selected project if it's the one being modified
+      const selectedProject = state.selectedProject && state.selectedProject.id === projectId
+        ? projects[projectIndex]
+        : state.selectedProject;
+      
+      return { projects, selectedProject };
+    }
+    return state;
+  })
 })); 

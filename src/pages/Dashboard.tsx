@@ -479,16 +479,6 @@ const Dashboard: React.FC = () => {
       >
         <h1 className="text-2xl text-primary-mint font-bold font-montserrat mb-2">Welcome to Synapse Dashboard</h1>
         <p className="text-primary-mint mb-6 opacity-90">Manage and monitor your cloud infrastructure projects</p>
-        
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="px-4 py-2 bg-primary-mint text-primary-darkBlue rounded-md hover:bg-white transition-colors duration-300 shadow-sm flex items-center font-montserrat font-medium"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-          </svg>
-          Create New Project
-        </button>
       </div>
 
       <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import Modal from './Modal';
-import { useProjectStore, Platform } from '../../store/projectStore';
+import { useProjectStore, Platform, mockPlatforms, mockRegions, ProjectType } from '../../store/projectStore';
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -11,11 +11,28 @@ interface CreateProjectModalProps {
 const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose }) => {
   const [name, setName] = useState('');
   const [platform, setPlatform] = useState<Platform>('AWS');
+  const [region, setRegion] = useState<string>('');
+  const [projectType, setProjectType] = useState<ProjectType>('default');
   const [billingOrganization, setBillingOrganization] = useState('');
   const [owner, setOwner] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // Available regions for selected platform
+  const [availableRegions, setAvailableRegions] = useState<string[]>([]);
+  
+  // Update regions when platform changes
+  useEffect(() => {
+    if (platform && mockRegions[platform]) {
+      const regions = mockRegions[platform];
+      setAvailableRegions(regions);
+      setRegion(regions[0]);
+    } else {
+      setAvailableRegions([]);
+      setRegion('');
+    }
+  }, [platform]);
 
   const { addProject } = useProjectStore();
 
@@ -23,6 +40,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
     const newErrors: Record<string, string> = {};
     if (!name.trim()) newErrors.name = 'Project name is required';
     if (!platform) newErrors.platform = 'Platform is required';
+    if (!region) newErrors.region = 'Region is required';
     if (!billingOrganization.trim()) newErrors.billingOrganization = 'Billing organization is required';
     if (!owner.trim()) newErrors.owner = 'Owner is required';
     
@@ -40,6 +58,8 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
       addProject({
         name,
         platform,
+        region,
+        projectType,
         billingOrganization,
         owner,
         description,
@@ -57,6 +77,8 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
   const handleClose = () => {
     setName('');
     setPlatform('AWS');
+    setRegion('');
+    setProjectType('default');
     setBillingOrganization('');
     setOwner('');
     setDescription('');
@@ -96,12 +118,46 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
                 errors.platform ? 'border-red-300' : 'border-gray-300'
               } rounded-md shadow-sm focus:outline-none focus:ring-primary-teal focus:border-primary-teal sm:text-sm`}
             >
-              <option value="AWS">AWS</option>
-              <option value="Azure">Azure</option>
-              <option value="Private Cloud">Private Cloud</option>
-              <option value="VMware">VMware</option>
+              {mockPlatforms.map(p => (
+                <option key={p} value={p}>{p}</option>
+              ))}
             </select>
             {errors.platform && <p className="mt-1 text-sm text-red-600">{errors.platform}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="region" className="block text-sm font-medium text-gray-700 font-montserrat">
+              Region *
+            </label>
+            <select
+              id="region"
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              className={`mt-1 block w-full px-3 py-2 border ${
+                errors.region ? 'border-red-300' : 'border-gray-300'
+              } rounded-md shadow-sm focus:outline-none focus:ring-primary-teal focus:border-primary-teal sm:text-sm`}
+              disabled={availableRegions.length === 0}
+            >
+              {availableRegions.map(r => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+            {errors.region && <p className="mt-1 text-sm text-red-600">{errors.region}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="projectType" className="block text-sm font-medium text-gray-700 font-montserrat">
+              Project Type
+            </label>
+            <select
+              id="projectType"
+              value={projectType}
+              onChange={(e) => setProjectType(e.target.value as ProjectType)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-teal focus:border-primary-teal sm:text-sm"
+            >
+              <option value="default">Default</option>
+              <option value="custom">Custom</option>
+            </select>
           </div>
 
           <div>
