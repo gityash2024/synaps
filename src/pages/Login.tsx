@@ -128,7 +128,7 @@ const Login: React.FC = () => {
                 <path d="M40 80L80 40" stroke="#3B82F6" strokeWidth="4" />
               </svg>
             </div>
-            <h1 className="text-5xl font-bold text-blue-900 tracking-tight">Synaps</h1>
+            <h1 className="text-5xl font-bold text-blue-900 tracking-tight">Synapse</h1>
             <p className="mt-6 text-xl text-blue-700 max-w-md">
               Cloud Infrastructure Management Platform
             </p>
@@ -148,7 +148,7 @@ const Login: React.FC = () => {
                   <path d="M40 80L80 40" stroke="#3B82F6" strokeWidth="4" />
                 </svg>
               </div>
-              <h2 className="text-center text-3xl font-extrabold text-gray-900">Sign in to Synaps</h2>
+              <h2 className="text-center text-3xl font-extrabold text-gray-900">Sign in to Synapse</h2>
               <p className="mt-2 text-center text-sm text-gray-600">
                 Enter your credentials to access your account
               </p>

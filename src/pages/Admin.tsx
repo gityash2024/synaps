@@ -1,27 +1,38 @@
 import React, { useState } from 'react';
+import UserFormModal from '../components/modals/UserFormModal';
+import DeleteConfirmModal from '../components/modals/DeleteConfirmModal';
+
+// Define user interface
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+}
+
+// Define setting interface
+interface Setting {
+  id: string;
+  name: string;
+  enabled: boolean;
+  description: string;
+}
 
 // Mock data
-const mockUsers = [
+const initialUsers = [
   { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin', status: 'Active' },
   { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User', status: 'Active' },
   { id: 3, name: 'Robert Johnson', email: 'robert@example.com', role: 'User', status: 'Inactive' },
   { id: 4, name: 'Emily Davis', email: 'emily@example.com', role: 'User', status: 'Active' },
 ];
 
-const mockSettings = [
+const initialSettings = [
   { id: 'notif', name: 'Email Notifications', enabled: true, description: 'Send email notifications for important events' },
   { id: 'mfa', name: 'Multi-Factor Authentication', enabled: false, description: 'Require MFA for all users' },
-  { id: 'apiAccess', name: 'API Access', enabled: true, description: 'Allow access to the Synaps API' },
+  { id: 'apiAccess', name: 'API Access', enabled: true, description: 'Allow access to the Synapse API' },
   { id: 'audit', name: 'Audit Logging', enabled: true, description: 'Log all user actions for security auditing' },
 ];
-
-const usageData = {
-  projects: 12,
-  vms: 45,
-  storage: '1.2 TB',
-  networks: 8,
-  activeUsers: 15,
-};
 
 interface TabProps {
   label: string;
@@ -45,7 +56,64 @@ const Tab: React.FC<TabProps> = ({ label, active, onClick }) => {
 };
 
 const Admin: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'users' | 'settings' | 'usage'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'settings'>('users');
+  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [settings, setSettings] = useState<Setting[]>(initialSettings);
+  
+  // Modal states
+  const [userModalOpen, setUserModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | undefined>(undefined);
+  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+  const [settingsChanged, setSettingsChanged] = useState(false);
+
+  const handleAddUser = () => {
+    setCurrentUser(undefined);
+    setModalMode('add');
+    setUserModalOpen(true);
+  };
+
+  const handleEditUser = (user: User) => {
+    setCurrentUser(user);
+    setModalMode('edit');
+    setUserModalOpen(true);
+  };
+
+  const handleDeleteUser = (user: User) => {
+    setCurrentUser(user);
+    setDeleteModalOpen(true);
+  };
+
+  const saveUser = (user: User) => {
+    if (modalMode === 'add') {
+      setUsers([...users, user]);
+    } else {
+      setUsers(users.map(u => u.id === user.id ? user : u));
+    }
+  };
+
+  const confirmDeleteUser = () => {
+    if (currentUser) {
+      setUsers(users.filter(user => user.id !== currentUser.id));
+    }
+  };
+
+  const toggleSetting = (id: string) => {
+    setSettings(prevSettings => 
+      prevSettings.map(setting => 
+        setting.id === id 
+          ? { ...setting, enabled: !setting.enabled } 
+          : setting
+      )
+    );
+    setSettingsChanged(true);
+  };
+
+  const saveSettings = () => {
+    console.log('Settings saved:', settings);
+    // In a real app, you would send these settings to your backend
+    setSettingsChanged(false);
+  };
 
   return (
     <div>
@@ -62,11 +130,6 @@ const Admin: React.FC = () => {
           active={activeTab === 'settings'}
           onClick={() => setActiveTab('settings')}
         />
-        <Tab
-          label="Usage Statistics"
-          active={activeTab === 'usage'}
-          onClick={() => setActiveTab('usage')}
-        />
       </div>
       
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -76,6 +139,7 @@ const Admin: React.FC = () => {
               <h2 className="text-lg font-medium text-gray-900">User Management</h2>
               <button
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                onClick={handleAddUser}
               >
                 Add User
               </button>
@@ -102,7 +166,7 @@ const Admin: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {mockUsers.map((user) => (
+                  {users.map((user) => (
                     <tr key={user.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{user.name}</div>
@@ -121,10 +185,16 @@ const Admin: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button className="text-blue-600 hover:text-blue-900 mr-4">
+                        <button 
+                          className="text-blue-600 hover:text-blue-900 mr-4"
+                          onClick={() => handleEditUser(user)}
+                        >
                           Edit
                         </button>
-                        <button className="text-red-600 hover:text-red-900">
+                        <button 
+                          className="text-red-600 hover:text-red-900"
+                          onClick={() => handleDeleteUser(user)}
+                        >
                           Delete
                         </button>
                       </td>
@@ -142,83 +212,61 @@ const Admin: React.FC = () => {
               <h2 className="text-lg font-medium text-gray-900">System Settings</h2>
             </div>
             <div className="divide-y divide-gray-200">
-              {mockSettings.map((setting) => (
+              {settings.map((setting) => (
                 <div key={setting.id} className="px-6 py-4 flex items-center justify-between">
                   <div>
                     <h3 className="text-sm font-medium text-gray-900">{setting.name}</h3>
                     <p className="text-sm text-gray-500">{setting.description}</p>
                   </div>
                   <div className="flex items-center">
-                    <label className="inline-flex items-center cursor-pointer">
-                      <span className="relative">
-                        <span className={`block w-10 h-6 rounded-full transition-colors ${setting.enabled ? 'bg-blue-600' : 'bg-gray-300'}`}></span>
-                        <span className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform transform ${setting.enabled ? 'translate-x-4' : ''}`}></span>
-                      </span>
-                    </label>
+                    <button 
+                      onClick={() => toggleSetting(setting.id)}
+                      className="relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none"
+                      role="switch"
+                      aria-checked={setting.enabled}
+                    >
+                      <span className={`${setting.enabled ? 'bg-blue-600' : 'bg-gray-300'} block w-10 h-6 rounded-full transition-colors`}></span>
+                      <span 
+                        className={`${setting.enabled ? 'translate-x-4' : 'translate-x-0'} absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform transform`}
+                      ></span>
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
             <div className="px-6 py-4 border-t">
               <button
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                className={`px-4 py-2 bg-blue-600 text-white rounded-md transition-colors ${
+                  settingsChanged 
+                    ? 'hover:bg-blue-700 opacity-100' 
+                    : 'opacity-50 cursor-not-allowed'
+                }`}
+                onClick={saveSettings}
+                disabled={!settingsChanged}
               >
                 Save Changes
               </button>
             </div>
           </div>
         )}
-        
-        {activeTab === 'usage' && (
-          <div>
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">Usage Statistics</h2>
-            </div>
-            <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-                <div className="text-blue-500 text-sm font-medium uppercase tracking-wide">Projects</div>
-                <div className="mt-2 flex items-baseline">
-                  <span className="text-3xl font-semibold text-blue-800">{usageData.projects}</span>
-                  <span className="ml-2 text-sm text-blue-600">Total</span>
-                </div>
-              </div>
-              <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
-                <div className="text-indigo-500 text-sm font-medium uppercase tracking-wide">Virtual Machines</div>
-                <div className="mt-2 flex items-baseline">
-                  <span className="text-3xl font-semibold text-indigo-800">{usageData.vms}</span>
-                  <span className="ml-2 text-sm text-indigo-600">Running</span>
-                </div>
-              </div>
-              <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
-                <div className="text-purple-500 text-sm font-medium uppercase tracking-wide">Storage Used</div>
-                <div className="mt-2 flex items-baseline">
-                  <span className="text-3xl font-semibold text-purple-800">{usageData.storage}</span>
-                </div>
-              </div>
-              <div className="bg-pink-50 rounded-lg p-4 border border-pink-100">
-                <div className="text-pink-500 text-sm font-medium uppercase tracking-wide">Networks</div>
-                <div className="mt-2 flex items-baseline">
-                  <span className="text-3xl font-semibold text-pink-800">{usageData.networks}</span>
-                </div>
-              </div>
-              <div className="bg-green-50 rounded-lg p-4 border border-green-100">
-                <div className="text-green-500 text-sm font-medium uppercase tracking-wide">Active Users</div>
-                <div className="mt-2 flex items-baseline">
-                  <span className="text-3xl font-semibold text-green-800">{usageData.activeUsers}</span>
-                  <span className="ml-2 text-sm text-green-600">Online</span>
-                </div>
-              </div>
-            </div>
-            <div className="px-6 py-4 border-t">
-              <button
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Generate Report
-              </button>
-            </div>
-          </div>
-        )}
       </div>
+      
+      {/* User Form Modal */}
+      <UserFormModal 
+        isOpen={userModalOpen}
+        onClose={() => setUserModalOpen(false)}
+        onSave={saveUser}
+        user={currentUser}
+        mode={modalMode}
+      />
+      
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal 
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={confirmDeleteUser}
+        itemName={currentUser ? currentUser.name : ''}
+      />
     </div>
   );
 };

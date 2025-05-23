@@ -1,11 +1,277 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useProjectStore } from '../store/projectStore';
 import CreateProjectModal from '../components/modals/CreateProjectModal';
+import {
+  BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, RadialBarChart, RadialBar
+} from 'recharts';
+
+// Mock data
+const usageData = {
+  projects: 12,
+  vms: 45,
+  storage: '1.2 TB',
+  networks: 8,
+  activeUsers: 15,
+};
+
+// Enhanced mock chart data
+const mockChartData = {
+  resourceUsage: [
+    { name: 'Jan', cpu: 65, memory: 45, storage: 30 },
+    { name: 'Feb', cpu: 70, memory: 50, storage: 35 },
+    { name: 'Mar', cpu: 75, memory: 60, storage: 40 },
+    { name: 'Apr', cpu: 85, memory: 65, storage: 50 },
+    { name: 'May', cpu: 90, memory: 70, storage: 55 },
+    { name: 'Jun', cpu: 95, memory: 75, storage: 60 },
+  ],
+  projectActivity: [
+    { name: 'Mon', deployments: 8, updates: 12 },
+    { name: 'Tue', deployments: 10, updates: 8 },
+    { name: 'Wed', deployments: 12, updates: 15 },
+    { name: 'Thu', deployments: 7, updates: 10 },
+    { name: 'Fri', deployments: 9, updates: 11 },
+    { name: 'Sat', deployments: 4, updates: 6 },
+    { name: 'Sun', deployments: 3, updates: 5 },
+  ],
+  storageDistribution: [
+    { name: 'Images', value: 35 },
+    { name: 'Videos', value: 25 },
+    { name: 'Documents', value: 20 },
+    { name: 'Backups', value: 15 },
+    { name: 'Other', value: 5 },
+  ],
+  serverLoad: [
+    { name: 'Server 1', value: 85 },
+    { name: 'Server 2', value: 75 },
+    { name: 'Server 3', value: 92 },
+    { name: 'Server 4', value: 65 },
+    { name: 'Server 5', value: 78 },
+  ]
+};
+
+// Custom colors
+const colors = {
+  cpu: '#3B82F6', // blue
+  memory: '#10B981', // green
+  storage: '#8B5CF6', // purple
+  deployments: '#4F46E5', // indigo
+  updates: '#F59E0B', // amber
+  pieColors: ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EC4899'],
+  radialColors: ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EC4899']
+};
+
+// Modern chart components using Recharts
+const ResourceUsageChart: React.FC = () => {
+  return (
+    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+      <h3 className="text-gray-700 text-lg font-medium mb-4">Resource Usage Trends</h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <AreaChart
+          data={mockChartData.resourceUsage}
+          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+        >
+          <defs>
+            <linearGradient id="colorCpu" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={colors.cpu} stopOpacity={0.8} />
+              <stop offset="95%" stopColor={colors.cpu} stopOpacity={0.1} />
+            </linearGradient>
+            <linearGradient id="colorMemory" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={colors.memory} stopOpacity={0.8} />
+              <stop offset="95%" stopColor={colors.memory} stopOpacity={0.1} />
+            </linearGradient>
+            <linearGradient id="colorStorage" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={colors.storage} stopOpacity={0.8} />
+              <stop offset="95%" stopColor={colors.storage} stopOpacity={0.1} />
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: '#fff', 
+              border: '1px solid #e2e8f0', 
+              borderRadius: '0.5rem',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+            }}
+            formatter={(value) => [`${value}%`, '']}
+          />
+          <Legend 
+            verticalAlign="top" 
+            height={36}
+            wrapperStyle={{ paddingBottom: '10px' }}
+          />
+          <Area 
+            type="monotone" 
+            dataKey="cpu" 
+            name="CPU" 
+            stroke={colors.cpu} 
+            fillOpacity={1} 
+            fill="url(#colorCpu)" 
+            animationDuration={1500}
+            strokeWidth={2}
+          />
+          <Area 
+            type="monotone" 
+            dataKey="memory" 
+            name="Memory" 
+            stroke={colors.memory} 
+            fillOpacity={1} 
+            fill="url(#colorMemory)" 
+            animationDuration={1500}
+            strokeWidth={2}
+          />
+          <Area 
+            type="monotone" 
+            dataKey="storage" 
+            name="Storage" 
+            stroke={colors.storage} 
+            fillOpacity={1} 
+            fill="url(#colorStorage)" 
+            animationDuration={1500}
+            strokeWidth={2}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+const ProjectActivityChart: React.FC = () => {
+  return (
+    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+      <h3 className="text-gray-700 text-lg font-medium mb-4">Weekly Project Activity</h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart
+          data={mockChartData.projectActivity}
+          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: '#fff', 
+              border: '1px solid #e2e8f0', 
+              borderRadius: '0.5rem',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+            }}
+          />
+          <Legend 
+            verticalAlign="top" 
+            height={36}
+            wrapperStyle={{ paddingBottom: '10px' }}
+          />
+          <Bar 
+            dataKey="deployments" 
+            name="Deployments" 
+            fill={colors.deployments} 
+            radius={[4, 4, 0, 0]}
+            animationDuration={1500}
+          />
+          <Bar 
+            dataKey="updates" 
+            name="Updates" 
+            fill={colors.updates} 
+            radius={[4, 4, 0, 0]}
+            animationDuration={1500}
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+const StorageDistributionChart: React.FC = () => {
+  return (
+    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+      <h3 className="text-gray-700 text-lg font-medium mb-4">Storage Distribution</h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <PieChart>
+          <Pie
+            data={mockChartData.storageDistribution}
+            cx="50%"
+            cy="50%"
+            innerRadius={70}
+            outerRadius={100}
+            fill="#8884d8"
+            paddingAngle={2}
+            dataKey="value"
+            nameKey="name"
+            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+            labelLine={false}
+            animationDuration={1500}
+          >
+            {mockChartData.storageDistribution.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={colors.pieColors[index % colors.pieColors.length]} />
+            ))}
+          </Pie>
+          <Tooltip 
+            formatter={(value) => [`${value}%`, 'Percentage']}
+            contentStyle={{ 
+              backgroundColor: '#fff', 
+              border: '1px solid #e2e8f0', 
+              borderRadius: '0.5rem',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+            }}
+          />
+          <Legend verticalAlign="bottom" />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+const ServerLoadChart: React.FC = () => {
+  return (
+    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+      <h3 className="text-gray-700 text-lg font-medium mb-4">Server Load</h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <RadialBarChart 
+          cx="50%" 
+          cy="50%" 
+          innerRadius="20%" 
+          outerRadius="80%" 
+          barSize={20} 
+          data={mockChartData.serverLoad}
+          startAngle={180}
+          endAngle={0}
+        >
+          <RadialBar
+            label={{ position: 'insideStart', fill: '#333', fontSize: 12 }}
+            background
+            dataKey="value"
+            animationDuration={1500}
+          >
+            {mockChartData.serverLoad.map((entry, index) => (
+              <Cell 
+                key={`cell-${index}`} 
+                fill={colors.radialColors[index % colors.radialColors.length]} 
+                name={entry.name}
+              />
+            ))}
+          </RadialBar>
+          <Tooltip 
+            formatter={(value) => [`${value}%`, 'Server Load']}
+            contentStyle={{ 
+              backgroundColor: '#fff', 
+              border: '1px solid #e2e8f0', 
+              borderRadius: '0.5rem',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+            }}
+          />
+          <Legend iconSize={10} layout="horizontal" verticalAlign="bottom" />
+        </RadialBarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
 
 const StatCard: React.FC<{ 
   title: string; 
-  value: number; 
+  value: number | string; 
   color: string;
   bgColor: string;
   icon: React.ReactNode;
@@ -76,15 +342,16 @@ const Dashboard: React.FC = () => {
   const { projects } = useProjectStore();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const navigate = useNavigate();
 
   const totalProjects = projects.length;
   const activeProjects = projects.filter(project => project.status === 'Active').length;
   const pendingProjects = projects.filter(project => project.status === 'Pending').length;
 
   return (
-    <div className="pb-8">
+    <div className="pb-8 relative">
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-md mb-8 p-6 text-white">
-        <h1 className="text-2xl font-bold mb-2">Welcome to Synaps Dashboard</h1>
+        <h1 className="text-2xl font-bold mb-2">Welcome to Synapse Dashboard</h1>
         <p className="text-blue-100 mb-6">Manage and monitor your cloud infrastructure projects</p>
         
         <button
@@ -132,6 +399,65 @@ const Dashboard: React.FC = () => {
             </svg>
           }
         />
+      </div>
+
+      {/* Usage Statistics Section */}
+      <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 mb-8">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <h2 className="text-lg font-medium text-gray-900">System Usage Statistics</h2>
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Generate Report
+          </button>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-5 gap-6">
+          <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+            <div className="text-blue-500 text-sm font-medium uppercase tracking-wide">Projects</div>
+            <div className="mt-2 flex items-baseline">
+              <span className="text-3xl font-semibold text-blue-800">{usageData.projects}</span>
+              <span className="ml-2 text-sm text-blue-600">Total</span>
+            </div>
+          </div>
+          <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
+            <div className="text-indigo-500 text-sm font-medium uppercase tracking-wide">Virtual Machines</div>
+            <div className="mt-2 flex items-baseline">
+              <span className="text-3xl font-semibold text-indigo-800">{usageData.vms}</span>
+              <span className="ml-2 text-sm text-indigo-600">Running</span>
+            </div>
+          </div>
+          <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
+            <div className="text-purple-500 text-sm font-medium uppercase tracking-wide">Storage Used</div>
+            <div className="mt-2 flex items-baseline">
+              <span className="text-3xl font-semibold text-purple-800">{usageData.storage}</span>
+            </div>
+          </div>
+          <div className="bg-pink-50 rounded-lg p-4 border border-pink-100">
+            <div className="text-pink-500 text-sm font-medium uppercase tracking-wide">Networks</div>
+            <div className="mt-2 flex items-baseline">
+              <span className="text-3xl font-semibold text-pink-800">{usageData.networks}</span>
+            </div>
+          </div>
+          <div className="bg-green-50 rounded-lg p-4 border border-green-100">
+            <div className="text-green-500 text-sm font-medium uppercase tracking-wide">Active Users</div>
+            <div className="mt-2 flex items-baseline">
+              <span className="text-3xl font-semibold text-green-800">{usageData.activeUsers}</span>
+              <span className="ml-2 text-sm text-green-600">Online</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Chart Section - First row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <ResourceUsageChart />
+        <ProjectActivityChart />
+      </div>
+
+      {/* Chart Section - Second row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <StorageDistributionChart />
+        <ServerLoadChart />
       </div>
 
       <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
@@ -267,6 +593,17 @@ const Dashboard: React.FC = () => {
           onClose={() => setIsCreateModalOpen(false)} 
         />
       )}
+
+      {/* Floating Contact Button */}
+      <button
+        onClick={() => navigate('/contact-us')}
+        className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all duration-300 hover:shadow-xl z-50 flex items-center justify-center"
+        aria-label="Contact Support"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      </button>
     </div>
   );
 };

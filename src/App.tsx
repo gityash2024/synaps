@@ -17,6 +17,7 @@ import Projects from './pages/Projects';
 import ProjectDetails from './pages/ProjectDetails';
 import Admin from './pages/Admin';
 import Error from './pages/Error';
+import ContactUs from './pages/ContactUs';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
               <Route path="/projects" element={<Projects />} />
               <Route path="/projects/:projectId" element={<ProjectDetails />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/contact-us" element={<ContactUs />} />
             </Route>
           </Route>
           
