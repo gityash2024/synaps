@@ -111,9 +111,9 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div ref={containerRef} className="min-h-screen flex items-center bg-gradient-to-br from-blue-100 via-blue-50 to-indigo-100 relative overflow-hidden">
+    <div ref={containerRef} className="min-h-screen flex items-center bg-gradient-to-br from-primary-mint/30 via-primary-mint/10 to-secondary-sage/20 relative overflow-hidden">
       {/* Add a semi-transparent overlay to make clouds more visible */}
-      <div className="absolute inset-0 bg-blue-900/5 backdrop-blur-[1px] z-0"></div>
+      <div className="absolute inset-0 bg-primary-darkBlue/5 backdrop-blur-[1px] z-0"></div>
       
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center justify-between z-10">
         {/* Logo and Branding */}
@@ -121,15 +121,15 @@ const Login: React.FC = () => {
           <div className="flex flex-col items-center text-center">
             <div className="mb-6">
               <svg width="160" height="160" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="120" height="120" rx="20" fill="#EBF4FF" />
-                <path d="M36 84L60 36L84 84H36Z" fill="#3B82F6" />
-                <circle cx="60" cy="60" r="20" fill="#1E40AF" />
-                <path d="M40 40L80 80" stroke="#3B82F6" strokeWidth="4" />
-                <path d="M40 80L80 40" stroke="#3B82F6" strokeWidth="4" />
+                <rect width="120" height="120" rx="20" fill="#EBF7F4" />
+                <path d="M36 84L60 36L84 84H36Z" fill="#7DD3C0" />
+                <circle cx="60" cy="60" r="20" fill="#155366" />
+                <path d="M40 40L80 80" stroke="#4DA892" strokeWidth="4" />
+                <path d="M40 80L80 40" stroke="#4DA892" strokeWidth="4" />
               </svg>
             </div>
-            <h1 className="text-5xl font-bold text-blue-900 tracking-tight">Synapse</h1>
-            <p className="mt-6 text-xl text-blue-700 max-w-md">
+            <h1 className="text-5xl font-bold text-primary-darkBlue tracking-tight font-montserrat">Synapse</h1>
+            <p className="mt-6 text-xl text-primary-teal max-w-md font-montserrat">
               Cloud Infrastructure Management Platform
             </p>
           </div>
@@ -141,15 +141,15 @@ const Login: React.FC = () => {
             <div className="text-center">
               <div className="flex justify-center lg:hidden mb-6">
                 <svg width="80" height="80" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="120" height="120" rx="20" fill="#EBF4FF" />
-                  <path d="M36 84L60 36L84 84H36Z" fill="#3B82F6" />
-                  <circle cx="60" cy="60" r="20" fill="#1E40AF" />
-                  <path d="M40 40L80 80" stroke="#3B82F6" strokeWidth="4" />
-                  <path d="M40 80L80 40" stroke="#3B82F6" strokeWidth="4" />
+                  <rect width="120" height="120" rx="20" fill="#EBF7F4" />
+                  <path d="M36 84L60 36L84 84H36Z" fill="#7DD3C0" />
+                  <circle cx="60" cy="60" r="20" fill="#155366" />
+                  <path d="M40 40L80 80" stroke="#4DA892" strokeWidth="4" />
+                  <path d="M40 80L80 40" stroke="#4DA892" strokeWidth="4" />
                 </svg>
               </div>
-              <h2 className="text-center text-3xl font-extrabold text-gray-900">Sign in to Synapse</h2>
-              <p className="mt-2 text-center text-sm text-gray-600">
+              <h2 className="text-center text-3xl font-extrabold text-primary-darkBlue font-montserrat">Sign in to Synapse</h2>
+              <p className="mt-2 text-center text-sm text-gray-600 font-montserrat">
                 Enter your credentials to access your account
               </p>
             </div>
@@ -170,7 +170,7 @@ const Login: React.FC = () => {
             <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
               <div className="rounded-md space-y-4">
                 <div>
-                  <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
+                  <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1 font-montserrat">Email address</label>
                   <input
                     id="email-address"
                     name="email"
@@ -179,12 +179,12 @@ const Login: React.FC = () => {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-teal focus:border-primary-teal focus:z-10 sm:text-sm"
                     placeholder="Enter your email"
                   />
                 </div>
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1 font-montserrat">Password</label>
                   <input
                     id="password"
                     name="password"
@@ -193,7 +193,7 @@ const Login: React.FC = () => {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-teal focus:border-primary-teal focus:z-10 sm:text-sm"
                     placeholder="Enter your password"
                   />
                 </div>
@@ -203,13 +203,13 @@ const Login: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 ${
+                  className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors duration-200 font-montserrat ${
                     isLoading ? 'opacity-70 cursor-not-allowed' : ''
                   }`}
                 >
                   {isLoading ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-primary-darkBlue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
@@ -221,16 +221,16 @@ const Login: React.FC = () => {
                 </button>
               </div>
               
-              <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
-                <h3 className="text-sm font-semibold text-blue-800 mb-1">Demo Credentials</h3>
-                <div className="flex flex-col text-xs text-blue-700">
+              <div className="bg-primary-mint/10 p-4 rounded-md border border-primary-mint/30">
+                <h3 className="text-sm font-semibold text-primary-darkBlue mb-1 font-montserrat">Demo Credentials</h3>
+                <div className="flex flex-col text-xs text-primary-teal">
                   <div className="flex justify-between">
                     <span>Email:</span>
-                    <span className="font-mono bg-white px-2 py-1 rounded border border-blue-200">email@demo.com</span>
+                    <span className="font-mono bg-white px-2 py-1 rounded border border-primary-mint/20">email@demo.com</span>
                   </div>
                   <div className="flex justify-between mt-1">
                     <span>Password:</span>
-                    <span className="font-mono bg-white px-2 py-1 rounded border border-blue-200">123456789</span>
+                    <span className="font-mono bg-white px-2 py-1 rounded border border-primary-mint/20">123456789</span>
                   </div>
                 </div>
               </div>

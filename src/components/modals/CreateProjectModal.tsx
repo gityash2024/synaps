@@ -69,7 +69,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 font-montserrat">
               Project Name *
             </label>
             <input
@@ -79,13 +79,13 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
               onChange={(e) => setName(e.target.value)}
               className={`mt-1 block w-full px-3 py-2 border ${
                 errors.name ? 'border-red-300' : 'border-gray-300'
-              } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+              } rounded-md shadow-sm focus:outline-none focus:ring-primary-teal focus:border-primary-teal sm:text-sm`}
             />
             {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
           </div>
 
           <div>
-            <label htmlFor="platform" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="platform" className="block text-sm font-medium text-gray-700 font-montserrat">
               Platform *
             </label>
             <select
@@ -94,7 +94,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
               onChange={(e) => setPlatform(e.target.value as Platform)}
               className={`mt-1 block w-full px-3 py-2 border ${
                 errors.platform ? 'border-red-300' : 'border-gray-300'
-              } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+              } rounded-md shadow-sm focus:outline-none focus:ring-primary-teal focus:border-primary-teal sm:text-sm`}
             >
               <option value="AWS">AWS</option>
               <option value="Azure">Azure</option>
@@ -105,7 +105,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
           </div>
 
           <div>
-            <label htmlFor="billing" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="billing" className="block text-sm font-medium text-gray-700 font-montserrat">
               Billing Organization *
             </label>
             <input
@@ -115,13 +115,13 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
               onChange={(e) => setBillingOrganization(e.target.value)}
               className={`mt-1 block w-full px-3 py-2 border ${
                 errors.billingOrganization ? 'border-red-300' : 'border-gray-300'
-              } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+              } rounded-md shadow-sm focus:outline-none focus:ring-primary-teal focus:border-primary-teal sm:text-sm`}
             />
             {errors.billingOrganization && <p className="mt-1 text-sm text-red-600">{errors.billingOrganization}</p>}
           </div>
 
           <div>
-            <label htmlFor="owner" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="owner" className="block text-sm font-medium text-gray-700 font-montserrat">
               Owner *
             </label>
             <input
@@ -131,13 +131,13 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
               onChange={(e) => setOwner(e.target.value)}
               className={`mt-1 block w-full px-3 py-2 border ${
                 errors.owner ? 'border-red-300' : 'border-gray-300'
-              } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+              } rounded-md shadow-sm focus:outline-none focus:ring-primary-teal focus:border-primary-teal sm:text-sm`}
             />
             {errors.owner && <p className="mt-1 text-sm text-red-600">{errors.owner}</p>}
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 font-montserrat">
               Description
             </label>
             <textarea
@@ -145,7 +145,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-teal focus:border-primary-teal sm:text-sm"
             />
           </div>
         </div>
@@ -154,14 +154,14 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal font-montserrat"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+            className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors font-montserrat ${
               isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >

@@ -42,7 +42,7 @@ const ProjectDetails: React.FC = () => {
         <p className="text-gray-500">Project not found</p>
         <button
           onClick={() => navigate('/dashboard')}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="mt-4 px-4 py-2 bg-primary-mint text-primary-darkBlue rounded-md hover:bg-primary-teal hover:text-white transition-colors font-montserrat"
         >
           Back to Dashboard
         </button>
@@ -54,7 +54,7 @@ const ProjectDetails: React.FC = () => {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{selectedProject.name}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 font-montserrat">{selectedProject.name}</h1>
           <div className="flex items-center mt-1 space-x-4">
             <p className="text-sm text-gray-500">{selectedProject.platform}</p>
             <StatusBadge status={selectedProject.status} />
@@ -62,7 +62,7 @@ const ProjectDetails: React.FC = () => {
         </div>
         <button
           onClick={() => navigate('/dashboard')}
-          className="px-4 py-2 text-sm text-blue-700 border border-blue-700 rounded-md hover:bg-blue-50"
+          className="px-4 py-2 text-sm text-primary-teal border border-primary-teal rounded-md hover:bg-primary-mint hover:bg-opacity-10 font-montserrat"
         >
           Back to Dashboard
         </button>
@@ -72,24 +72,24 @@ const ProjectDetails: React.FC = () => {
         {/* Project Information */}
         <section className="bg-white shadow rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Project Information</h2>
+            <h2 className="text-lg font-medium text-gray-900 font-montserrat">Project Information</h2>
           </div>
           <div className="p-6">
             <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
               <div>
-                <dt className="text-sm font-medium text-gray-500">Description</dt>
+                <dt className="text-sm font-medium text-gray-500 font-montserrat">Description</dt>
                 <dd className="mt-1 text-sm text-gray-900">{selectedProject.description}</dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">Billing Organization</dt>
+                <dt className="text-sm font-medium text-gray-500 font-montserrat">Billing Organization</dt>
                 <dd className="mt-1 text-sm text-gray-900">{selectedProject.billingOrganization}</dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">Owner</dt>
+                <dt className="text-sm font-medium text-gray-500 font-montserrat">Owner</dt>
                 <dd className="mt-1 text-sm text-gray-900">{selectedProject.owner}</dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">Platform</dt>
+                <dt className="text-sm font-medium text-gray-500 font-montserrat">Platform</dt>
                 <dd className="mt-1 text-sm text-gray-900">{selectedProject.platform}</dd>
               </div>
             </dl>
@@ -99,10 +99,10 @@ const ProjectDetails: React.FC = () => {
         {/* Networks Section */}
         <section className="bg-white shadow rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="text-lg font-medium text-gray-900">Networks</h2>
+            <h2 className="text-lg font-medium text-gray-900 font-montserrat">Networks</h2>
             <button
               onClick={() => setIsNetworkModalOpen(true)}
-              className="px-3 py-1 text-sm text-blue-700 border border-blue-700 rounded-md hover:bg-blue-50"
+              className="px-3 py-1 text-sm text-primary-teal border border-primary-teal rounded-md hover:bg-primary-mint hover:bg-opacity-10 font-montserrat"
             >
               Add Network
             </button>
@@ -112,10 +112,10 @@ const ProjectDetails: React.FC = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
                       Network Name
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
                       Subnets
                     </th>
                   </tr>
@@ -150,10 +150,10 @@ const ProjectDetails: React.FC = () => {
         {/* Virtual Machines Section */}
         <section className="bg-white shadow rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="text-lg font-medium text-gray-900">Virtual Machines</h2>
+            <h2 className="text-lg font-medium text-gray-900 font-montserrat">Virtual Machines</h2>
             <button
               onClick={() => setIsVMModalOpen(true)}
-              className="px-3 py-1 text-sm text-blue-700 border border-blue-700 rounded-md hover:bg-blue-50"
+              className="px-3 py-1 text-sm text-primary-teal border border-primary-teal rounded-md hover:bg-primary-mint hover:bg-opacity-10 font-montserrat"
             >
               Add VM
             </button>
@@ -163,19 +163,19 @@ const ProjectDetails: React.FC = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
                       Name
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
                       OS
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
                       Type
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
                       CPU / RAM
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
                       Status
                     </th>
                   </tr>
@@ -213,10 +213,10 @@ const ProjectDetails: React.FC = () => {
         {/* Data Disks Section */}
         <section className="bg-white shadow rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="text-lg font-medium text-gray-900">Data Disks</h2>
+            <h2 className="text-lg font-medium text-gray-900 font-montserrat">Data Disks</h2>
             <button
               onClick={() => setIsDiskModalOpen(true)}
-              className="px-3 py-1 text-sm text-blue-700 border border-blue-700 rounded-md hover:bg-blue-50"
+              className="px-3 py-1 text-sm text-primary-teal border border-primary-teal rounded-md hover:bg-primary-mint hover:bg-opacity-10 font-montserrat"
             >
               Add Disk
             </button>
@@ -226,10 +226,10 @@ const ProjectDetails: React.FC = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
                       Name
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
                       Size (GB)
                     </th>
                   </tr>

@@ -115,7 +115,7 @@ const ContactUs: React.FC = () => {
   return (
     <div className="pb-8 max-w-6xl mx-auto">
       <div className="bg-gradient-to-r from-primary-darkBlue to-primary-teal rounded-xl shadow-md mb-8 p-6 text-white">
-        <h1 className="text-2xl font-bold font-montserrat mb-2">Contact Us</h1>
+        <h1 className="text-2xl text-primary-mint font-bold font-montserrat mb-2">Contact Us</h1>
         <p className="text-primary-mint">We're here to help with any questions or issues you may have.</p>
       </div>
 
