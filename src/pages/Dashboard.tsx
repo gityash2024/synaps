@@ -451,7 +451,7 @@ const ProjectCard: React.FC<{
 const Dashboard: React.FC = () => {
   const { projects } = useProjectStore();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
   const navigate = useNavigate();
 
   // Animation refs
