@@ -2,15 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProjectStore } from '../store/projectStore';
 import CreateProjectModal from '../components/modals/CreateProjectModal';
+import Loader from '../components/common/Loader';
 import useAnimateOnScroll from '../hooks/useAnimateOnScroll';
+import { toast } from 'react-toastify';
 import {
   BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, RadialBarChart, RadialBar
 } from 'recharts';
 
-// Custom colors based on brand guidelines
 const chartColors = {
-  primary: '#013534', // darkBlue
+  primary: '#013534',
   mint: '#44D0B6',
   teal: '#117378',
   sage: '#83C149',
@@ -21,7 +22,6 @@ const chartColors = {
   paleGreen: '#C9D8AB',
 };
 
-// Mock data
 const usageData = {
   projects: 12,
   vms: 45,
@@ -30,7 +30,6 @@ const usageData = {
   activeUsers: 15,
 };
 
-// Enhanced mock chart data
 const mockChartData = {
   resourceUsage: [
     { name: 'Jan', cpu: 65, memory: 45, storage: 30 },
@@ -65,18 +64,6 @@ const mockChartData = {
   ]
 };
 
-// Custom colors
-const colors = {
-  cpu: '#3B82F6', // blue
-  memory: '#10B981', // green
-  storage: '#8B5CF6', // purple
-  deployments: '#4F46E5', // indigo
-  updates: '#F59E0B', // amber
-  pieColors: ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EC4899'],
-  radialColors: ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EC4899']
-};
-
-// Modern chart components using Recharts
 const ResourceUsageChart: React.FC = () => {
   const chartRef = useAnimateOnScroll<HTMLDivElement>({
     animationClass: 'animate-fade-in',
@@ -449,12 +436,12 @@ const ProjectCard: React.FC<{
 };
 
 const Dashboard: React.FC = () => {
-  const { projects } = useProjectStore();
+  const { projects, loadProjects, loading, error } = useProjectStore();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
+  const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
 
-  // Animation refs
   const headerRef = useAnimateOnScroll<HTMLDivElement>({ animationClass: 'animate-fade-in' });
   const statsRef = useAnimateOnScroll<HTMLDivElement>({ 
     animationClass: 'animate-slide-up',
@@ -467,9 +454,25 @@ const Dashboard: React.FC = () => {
     rootMargin: '0px 0px -50px 0px' 
   });
 
+  useEffect(() => {
+    loadProjects();
+  }, [loadProjects]);
+
   const totalProjects = projects.length;
   const activeProjects = projects.filter(project => project.status === 'Active').length;
   const pendingProjects = projects.filter(project => project.status === 'Pending').length;
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await loadProjects();
+      toast.success('Dashboard refreshed successfully');
+    } catch (error) {
+      toast.error('Failed to refresh dashboard');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   return (
     <div className="pb-8 relative">
@@ -477,8 +480,22 @@ const Dashboard: React.FC = () => {
         ref={headerRef}
         className="bg-gradient-to-r from-primary-darkBlue to-primary-teal rounded-xl shadow-lg mb-8 p-6 text-white"
       >
-        <h1 className="text-2xl text-primary-mint font-bold font-montserrat mb-2">Welcome to Synapses Dashboard</h1>
-        <p className="text-primary-mint mb-6 opacity-90">Manage and monitor your cloud infrastructure projects</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl text-primary-mint font-bold font-montserrat mb-2">Welcome to Synapses Dashboard</h1>
+            <p className="text-primary-mint mb-6 opacity-90">Manage and monitor your cloud infrastructure projects</p>
+          </div>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="flex items-center px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg text-white transition-all duration-200 disabled:opacity-50"
+          >
+            <svg className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
       </div>
 
       <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -520,7 +537,6 @@ const Dashboard: React.FC = () => {
         />
       </div>
 
-      {/* Usage Statistics Section */}
       <div 
         ref={usageStatsRef}
         className="bg-white rounded-xl shadow-card overflow-hidden border border-gray-100 mb-8"
@@ -570,13 +586,11 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Chart Section - First row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <ResourceUsageChart />
         <ProjectActivityChart />
       </div>
 
-      {/* Chart Section - Second row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <StorageDistributionChart />
         <ServerLoadChart />
@@ -588,7 +602,11 @@ const Dashboard: React.FC = () => {
       >
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
           <h2 className="text-lg font-medium font-montserrat text-primary-darkBlue">Recent Projects</h2>
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 items-center">
+            {(loading || refreshing) && (
+              <Loader size="sm" color="primary" />
+            )}
+            
             <button 
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-md ${viewMode === 'grid' ? 'bg-primary-mint bg-opacity-20 text-primary-teal' : 'text-gray-400 hover:text-gray-600'}`}
@@ -608,107 +626,134 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
         
-        {viewMode === 'grid' ? (
-          <div className="p-6">
-            {projects.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {projects.map((project, index) => (
-                  <ProjectCard key={project.id} project={project} delay={index * 100} />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                <h3 className="text-base font-medium font-montserrat text-primary-darkBlue mb-1">No projects found</h3>
-                <p className="text-gray-500 mb-4">Get started by creating your first project</p>
-                <button
-                  onClick={() => setIsCreateModalOpen(true)}
-                  className="px-4 py-2 bg-primary-mint text-primary-darkBlue rounded-md hover:bg-primary-teal hover:text-white transition-colors font-montserrat"
+        {error && (
+          <div className="p-4 bg-red-50 border-l-4 border-red-500">
+            <div className="flex">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{error}</p>
+                <button 
+                  onClick={handleRefresh} 
+                  className="mt-1 text-sm text-red-600 hover:text-red-500 font-medium"
                 >
-                  Create Project
+                  Try Again
                 </button>
               </div>
-            )}
+            </div>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="p-12">
+            <Loader size="lg" text="Loading projects..." />
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium font-montserrat text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium font-montserrat text-gray-500 uppercase tracking-wider">
-                    Platform
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium font-montserrat text-gray-500 uppercase tracking-wider">
-                    Owner
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium font-montserrat text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium font-montserrat text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+          <>
+            {viewMode === 'grid' ? (
+              <div className="p-6">
                 {projects.length > 0 ? (
-                  projects.map((project) => (
-                    <tr key={project.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-primary-darkBlue font-montserrat">{project.name}</div>
-                        <div className="text-sm text-gray-500">{project.description}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{project.platform}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{project.owner}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                          ${project.status === 'Active' ? 'bg-secondary-sage bg-opacity-20 text-secondary-olive' : 
-                            project.status === 'Inactive' ? 'bg-secondary-coral bg-opacity-20 text-secondary-coral' : 
-                            'bg-secondary-sand bg-opacity-20 text-secondary-brown'}`}
-                        >
-                          {project.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Link to={`/projects/${project.id}`} className="text-primary-teal hover:text-primary-darkBlue flex items-center font-montserrat">
-                          View
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {projects.map((project, index) => (
+                      <ProjectCard key={project.id} project={project} delay={index * 100} />
+                    ))}
+                  </div>
                 ) : (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center">
-                      <div className="flex flex-col items-center justify-center text-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                        <h3 className="text-base font-medium font-montserrat text-primary-darkBlue mb-1">No projects found</h3>
-                        <p className="text-sm text-gray-500 mb-4">Get started by creating your first project</p>
-                        <button
-                          onClick={() => setIsCreateModalOpen(true)}
-                          className="px-4 py-2 bg-primary-mint text-primary-darkBlue rounded-md hover:bg-primary-teal hover:text-white transition-colors font-montserrat"
-                        >
-                          Create Project
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                  <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <h3 className="text-base font-medium font-montserrat text-primary-darkBlue mb-1">No projects found</h3>
+                    <p className="text-gray-500 mb-4">Get started by creating your first project</p>
+                    <button
+                      onClick={() => setIsCreateModalOpen(true)}
+                      className="px-4 py-2 bg-primary-mint text-primary-darkBlue rounded-md hover:bg-primary-teal hover:text-white transition-colors font-montserrat"
+                    >
+                      Create Project
+                    </button>
+                  </div>
                 )}
-              </tbody>
-            </table>
-          </div>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium font-montserrat text-gray-500 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium font-montserrat text-gray-500 uppercase tracking-wider">
+                        Platform
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium font-montserrat text-gray-500 uppercase tracking-wider">
+                        Owner
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium font-montserrat text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium font-montserrat text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {projects.length > 0 ? (
+                      projects.map((project) => (
+                        <tr key={project.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-primary-darkBlue font-montserrat">{project.name}</div>
+                            <div className="text-sm text-gray-500">{project.description}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{project.platform}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{project.owner}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                              ${project.status === 'Active' ? 'bg-secondary-sage bg-opacity-20 text-secondary-olive' : 
+                                project.status === 'Inactive' ? 'bg-secondary-coral bg-opacity-20 text-secondary-coral' : 
+                                'bg-secondary-sand bg-opacity-20 text-secondary-brown'}`}
+                            >
+                              {project.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <Link to={`/projects/${project.id}`} className="text-primary-teal hover:text-primary-darkBlue flex items-center font-montserrat">
+                              View
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </Link>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center">
+                          <div className="flex flex-col items-center justify-center text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                            <h3 className="text-base font-medium font-montserrat text-primary-darkBlue mb-1">No projects found</h3>
+                            <p className="text-sm text-gray-500 mb-4">Get started by creating your first project</p>
+                            <button
+                              onClick={() => setIsCreateModalOpen(true)}
+                              className="px-4 py-2 bg-primary-mint text-primary-darkBlue rounded-md hover:bg-primary-teal hover:text-white transition-colors font-montserrat"
+                            >
+                              Create Project
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -722,4 +767,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

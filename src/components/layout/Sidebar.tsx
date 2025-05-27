@@ -297,7 +297,7 @@ const Sidebar: React.FC = () => {
             />
             <NavItem 
               to="/contact-us" 
-              label="Contact Us" 
+              label="Support" 
               isActive={isActive('/contact-us')}
               onClick={closeSidebar}
               icon={

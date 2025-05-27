@@ -3,14 +3,11 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Context
 import { AuthProvider } from './context/AuthContext';
 
-// Layouts and Routes
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Pages
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
@@ -23,7 +20,18 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <ToastContainer position="top-right" autoClose={3000} />
+        <ToastContainer 
+          position="top-right" 
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
         <Routes>
           <Route path="/login" element={<Login />} />
           
@@ -45,4 +53,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import Modal from './Modal';
 import { useProjectStore, Network, OSType } from '../../store/projectStore';
@@ -10,25 +10,48 @@ interface AddVMModalProps {
   networks: Network[];
 }
 
-const cpuOptions = ['1 vCPU', '2 vCPU', '4 vCPU', '8 vCPU', '16 vCPU'];
-const ramOptions = ['2 GB', '4 GB', '8 GB', '16 GB', '32 GB', '64 GB'];
-
 const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId, networks }) => {
+  const { addVirtualMachine, loadVMSizes, loadOSList, vmSizes, osList, projects } = useProjectStore();
+  
+  // Get current project to find platform
+  const currentProject = projects.find(p => p.id === projectId);
+  const platformId = currentProject?.platformId;
+
   const [name, setName] = useState('');
   const [networkId, setNetworkId] = useState(networks.length > 0 ? networks[0].id : '');
   const [diskSize, setDiskSize] = useState(50);
-  const [os, setOs] = useState<OSType>('Ubuntu');
-  const [cpu, setCpu] = useState(cpuOptions[1]); // Default to 2 vCPU
-  const [ram, setRam] = useState(ramOptions[1]); // Default to 4 GB
+  const [osId, setOsId] = useState('');
+  const [instanceTypeId, setInstanceTypeId] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { addVirtualMachine } = useProjectStore();
+  // Load VM sizes and OS list when modal opens and platform is available
+  useEffect(() => {
+    if (isOpen && platformId) {
+      loadVMSizes(platformId);
+      loadOSList(platformId);
+    }
+  }, [isOpen, platformId, loadVMSizes, loadOSList]);
+
+  // Set default values when data loads
+  useEffect(() => {
+    if (vmSizes.length > 0 && !instanceTypeId) {
+      setInstanceTypeId(vmSizes[0].id);
+    }
+  }, [vmSizes, instanceTypeId]);
+
+  useEffect(() => {
+    if (osList.length > 0 && !osId) {
+      setOsId(osList[0].id);
+    }
+  }, [osList, osId]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!name.trim()) newErrors.name = 'VM name is required';
     if (!networkId) newErrors.networkId = 'Network is required';
+    if (!instanceTypeId) newErrors.instanceTypeId = 'Instance type is required';
+    if (!osId) newErrors.osId = 'Operating system is required';
     if (diskSize < 10) newErrors.diskSize = 'Disk size must be at least 10 GB';
     if (diskSize > 1000) newErrors.diskSize = 'Disk size cannot exceed 1000 GB';
     
@@ -36,28 +59,34 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId, net
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsSubmitting(true);
     
     try {
-      addVirtualMachine(projectId, {
+      // Find selected OS and instance type for display
+      const selectedOS = osList.find(os => os.id === osId);
+      const selectedInstanceType = vmSizes.find(vm => vm.id === instanceTypeId);
+      
+      await addVirtualMachine(projectId, {
         name,
         networkId,
         diskSize,
-        os,
-        cpu,
-        ram,
+        os: selectedOS?.type === 'linux' ? 'Ubuntu' : 'Windows Server',
+        cpu: selectedInstanceType?.Display_name || '2 vCPU',
+        ram: '4 GB', // Default, could be parsed from Display_name
         status: 'Pending',
-        type: `${os === 'Ubuntu' ? 'Linux' : 'Windows'} Server`,
+        type: selectedInstanceType?.value || 'Unknown',
       });
       
       toast.success('Virtual machine deployment initiated!');
       handleClose();
     } catch (error) {
       toast.error('Failed to deploy virtual machine');
+      console.error('VM deployment error:', error);
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -68,9 +97,8 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId, net
       setNetworkId(networks[0].id);
     }
     setDiskSize(50);
-    setOs('Ubuntu');
-    setCpu(cpuOptions[1]);
-    setRam(ramOptions[1]);
+    setOsId('');
+    setInstanceTypeId('');
     setErrors({});
     onClose();
   };
@@ -129,51 +157,50 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId, net
             </label>
             <select
               id="os"
-              value={os}
-              onChange={(e) => setOs(e.target.value as OSType)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              value={osId}
+              onChange={(e) => setOsId(e.target.value)}
+              className={`mt-1 block w-full px-3 py-2 border ${
+                errors.osId ? 'border-red-300' : 'border-gray-300'
+              } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+              disabled={osList.length === 0}
             >
-              <option value="Ubuntu">Ubuntu</option>
-              <option value="Windows Server">Windows Server</option>
+              <option value="">Select operating system...</option>
+              {osList.map((os) => (
+                <option key={os.id} value={os.id}>
+                  {os.Display_name}
+                </option>
+              ))}
             </select>
+            {errors.osId && <p className="mt-1 text-sm text-red-600">{errors.osId}</p>}
+            {platformId && osList.length === 0 && (
+              <p className="mt-1 text-sm text-gray-500">Loading operating systems...</p>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="cpu" className="block text-sm font-medium text-gray-700">
-                CPU *
-              </label>
-              <select
-                id="cpu"
-                value={cpu}
-                onChange={(e) => setCpu(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                {cpuOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="ram" className="block text-sm font-medium text-gray-700">
-                RAM *
-              </label>
-              <select
-                id="ram"
-                value={ram}
-                onChange={(e) => setRam(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                {ramOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div>
+            <label htmlFor="instance-type" className="block text-sm font-medium text-gray-700">
+              Instance Type *
+            </label>
+            <select
+              id="instance-type"
+              value={instanceTypeId}
+              onChange={(e) => setInstanceTypeId(e.target.value)}
+              className={`mt-1 block w-full px-3 py-2 border ${
+                errors.instanceTypeId ? 'border-red-300' : 'border-gray-300'
+              } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+              disabled={vmSizes.length === 0}
+            >
+              <option value="">Select instance type...</option>
+              {vmSizes.map((vmSize) => (
+                <option key={vmSize.id} value={vmSize.id}>
+                  {vmSize.Display_name}
+                </option>
+              ))}
+            </select>
+            {errors.instanceTypeId && <p className="mt-1 text-sm text-red-600">{errors.instanceTypeId}</p>}
+            {platformId && vmSizes.length === 0 && (
+              <p className="mt-1 text-sm text-gray-500">Loading instance types...</p>
+            )}
           </div>
 
           <div>
@@ -205,9 +232,9 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId, net
           </button>
           <button
             type="submit"
-            disabled={isSubmitting || networks.length === 0}
+            disabled={isSubmitting || networks.length === 0 || !instanceTypeId || !osId}
             className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors font-montserrat ${
-              (isSubmitting || networks.length === 0) ? 'opacity-70 cursor-not-allowed' : ''
+              (isSubmitting || networks.length === 0 || !instanceTypeId || !osId) ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >
             {isSubmitting ? 'Deploying...' : 'Deploy VM'}
@@ -218,4 +245,4 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId, net
   );
 };
 
-export default AddVMModal; 
+export default AddVMModal;
