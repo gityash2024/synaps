@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useProjectStore, Network, VirtualMachine, DataDisk } from '../store/projectStore';
+import { useProjectStore, Network, VirtualMachine, DataDisk, SecurityResource, BackupResource, StorageResource } from '../store/projectStore';
 import ServiceCatalogModal from '../components/modals/ServiceCatalogModal';
 import ConfirmationModal from '../components/modals/ConfirmationModal';
 import Loader from '../components/common/Loader';
@@ -45,7 +45,7 @@ const ProjectDetails: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   
   const [resourceToRemove, setResourceToRemove] = useState<{
-    type: 'network' | 'virtualMachine' | 'dataDisk';
+    type: 'network' | 'virtualMachine' | 'dataDisk' | 'securityResource' | 'backupResource' | 'storageResource';
     id: string;
     name: string;
   } | null>(null);
@@ -79,7 +79,7 @@ const ProjectDetails: React.FC = () => {
     { id: 'storage', label: 'Storage', icon: <DocumentDuplicateIcon className="h-5 w-5" /> },
   ];
 
-  const confirmResourceRemoval = (type: 'network' | 'virtualMachine' | 'dataDisk', id: string, name: string) => {
+  const confirmResourceRemoval = (type: 'network' | 'virtualMachine' | 'dataDisk' | 'securityResource' | 'backupResource' | 'storageResource', id: string, name: string) => {
     setResourceToRemove({ type, id, name });
   };
 
@@ -178,13 +178,13 @@ const ProjectDetails: React.FC = () => {
                         OS
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
-                        Type
+                        Instance Type
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
-                        CPU / RAM
+                        Public IP
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
-                        Disk Size
+                        Data Disk Size
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
                         Status
@@ -195,40 +195,65 @@ const ProjectDetails: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {selectedProject.virtualMachines.map((vm: VirtualMachine) => (
-                      <tr key={vm.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {vm.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <div className="flex items-center">
-                            <span className={`inline-block w-2 h-2 rounded-full mr-2 ${vm.os === 'Ubuntu' ? 'bg-orange-500' : 'bg-blue-500'}`}></span>
-                            {vm.os}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {vm.type}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {vm.cpu} / {vm.ram}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {vm.diskSize} GB
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <StatusBadge status={vm.status} />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
-                          <button
-                            onClick={() => confirmResourceRemoval('virtualMachine', vm.id, vm.name)}
-                            className="text-secondary-coral hover:text-red-700 font-medium font-montserrat transition-colors"
-                            title="Remove virtual machine"
-                          >
-                            <TrashIcon className="h-5 w-5 inline" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {selectedProject.virtualMachines.map((vm: VirtualMachine) => {
+                      // Try to parse details for additional info
+                      let publicIP = 'N/A';
+                      let instanceId = 'N/A';
+                      let dataEBSSize = vm.diskSize;
+                      
+                      try {
+                        const details = JSON.parse(vm.details || '{}');
+                        publicIP = details.PublicIP || 'N/A';
+                        instanceId = details.InstanceId || 'N/A';
+                        dataEBSSize = parseInt(details.DataEBSSize) || vm.diskSize;
+                      } catch (e) {
+                        // Use defaults if parsing fails
+                      }
+
+                      return (
+                        <tr key={vm.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <div>
+                              <div>{vm.name}</div>
+                              {instanceId !== 'N/A' && (
+                                <div className="text-xs text-gray-500">{instanceId}</div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <div className="flex items-center">
+                              <span className={`inline-block w-2 h-2 rounded-full mr-2 ${vm.os === 'Ubuntu' ? 'bg-orange-500' : 'bg-blue-500'}`}></span>
+                              {vm.os}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {vm.type}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              publicIP !== 'N/A' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {publicIP}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {dataEBSSize} GB
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <StatusBadge status={vm.status} />
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                            <button
+                              onClick={() => confirmResourceRemoval('virtualMachine', vm.id, vm.name)}
+                              className="text-secondary-coral hover:text-red-700 font-medium font-montserrat transition-colors"
+                              title="Remove virtual machine"
+                            >
+                              <TrashIcon className="h-5 w-5 inline" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -250,61 +275,121 @@ const ProjectDetails: React.FC = () => {
         );
       case 'storage':
         return (
-          <div className="space-y-4">
-            {selectedProject.dataDisks.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
-                        Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
-                        Size (GB)
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
-                        Usage
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {selectedProject.dataDisks.map((disk: DataDisk) => (
-                      <tr key={disk.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {disk.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {disk.size} GB
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <div className="flex items-center">
-                            <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                              <div className={`bg-primary-teal h-2 rounded-full`} style={{width: `${Math.random() * 80 + 10}%`}}></div>
-                            </div>
-                            <span className="text-xs">{Math.floor(Math.random() * 80 + 10)}%</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
-                          <button
-                            onClick={() => confirmResourceRemoval('dataDisk', disk.id, disk.name)}
-                            className="text-secondary-coral hover:text-red-700 font-medium font-montserrat transition-colors"
-                            title="Remove disk"
-                          >
-                            <TrashIcon className="h-5 w-5 inline" />
-                          </button>
-                        </td>
+          <div className="space-y-6">
+            {/* Storage Resources Section */}
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Storage Resources</h3>
+              {selectedProject.storageResources.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                          Name
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                          Type
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                          Created
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                          Actions
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {selectedProject.storageResources.map((storage: StorageResource) => (
+                        <tr key={storage.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {storage.name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {storage.type}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <StatusBadge status={storage.status} />
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(storage.creationDate).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                            <button
+                              onClick={() => confirmResourceRemoval('storageResource', storage.id, storage.name)}
+                              className="text-secondary-coral hover:text-red-700 font-medium font-montserrat transition-colors"
+                              title="Remove storage"
+                            >
+                              <TrashIcon className="h-5 w-5 inline" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="p-4 text-center text-gray-500 text-sm">
+                  No storage resources configured
+                </div>
+              )}
+            </div>
+
+            {/* Data Disks Section */}
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Data Disks</h3>
+              {selectedProject.dataDisks.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                          Name
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                          Size (GB)
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {selectedProject.dataDisks.map((disk: DataDisk) => (
+                        <tr key={disk.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {disk.name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {disk.size} GB
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                            <button
+                              onClick={() => confirmResourceRemoval('dataDisk', disk.id, disk.name)}
+                              className="text-secondary-coral hover:text-red-700 font-medium font-montserrat transition-colors"
+                              title="Remove disk"
+                            >
+                              <TrashIcon className="h-5 w-5 inline" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="p-4 text-center text-gray-500 text-sm">
+                  No data disks configured
+                </div>
+              )}
+            </div>
+
+            {selectedProject.storageResources.length === 0 && selectedProject.dataDisks.length === 0 && (
               <div className="p-6 text-center">
                 <DocumentDuplicateIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-sm font-medium text-gray-900 mb-2">No storage disks configured</h3>
+                <h3 className="text-sm font-medium text-gray-900 mb-2">No storage configured</h3>
                 <p className="text-sm text-gray-500 mb-4">Add storage from the service catalog to get started.</p>
                 <button
                   onClick={() => setIsServiceCatalogOpen(true)}
@@ -319,32 +404,146 @@ const ProjectDetails: React.FC = () => {
         );
       case 'security':
         return (
-          <div className="p-6 text-center">
-            <ShieldCheckIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-sm font-medium text-gray-900 mb-2">No security resources configured</h3>
-            <p className="text-sm text-gray-500 mb-4">Add security resources from the service catalog.</p>
-            <button
-              onClick={() => setIsServiceCatalogOpen(true)}
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
-            >
-              <PlusIcon className="h-4 w-4 mr-1" />
-              Add Security
-            </button>
+          <div className="space-y-4">
+            {selectedProject.securityResources.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                        Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                        Type
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                        Created
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {selectedProject.securityResources.map((security: SecurityResource) => (
+                      <tr key={security.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {security.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            {security.type.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <StatusBadge status={security.status} />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(security.creationDate).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                          <button
+                            onClick={() => confirmResourceRemoval('securityResource', security.id, security.name)}
+                            className="text-secondary-coral hover:text-red-700 font-medium font-montserrat transition-colors"
+                            title="Remove security resource"
+                          >
+                            <TrashIcon className="h-5 w-5 inline" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="p-6 text-center">
+                <ShieldCheckIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-sm font-medium text-gray-900 mb-2">No security resources configured</h3>
+                <p className="text-sm text-gray-500 mb-4">Add security resources from the service catalog.</p>
+                <button
+                  onClick={() => setIsServiceCatalogOpen(true)}
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
+                >
+                  <PlusIcon className="h-4 w-4 mr-1" />
+                  Add Security
+                </button>
+              </div>
+            )}
           </div>
         );
       case 'backup':
         return (
-          <div className="p-6 text-center">
-            <ArchiveBoxIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-sm font-medium text-gray-900 mb-2">No backup resources configured</h3>
-            <p className="text-sm text-gray-500 mb-4">Add backup resources from the service catalog.</p>
-            <button
-              onClick={() => setIsServiceCatalogOpen(true)}
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
-            >
-              <PlusIcon className="h-4 w-4 mr-1" />
-              Add Backup
-            </button>
+          <div className="space-y-4">
+            {selectedProject.backupResources.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                        Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                        Type
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                        Created
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {selectedProject.backupResources.map((backup: BackupResource) => (
+                      <tr key={backup.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {backup.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                            {backup.type.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <StatusBadge status={backup.status} />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(backup.creationDate).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                          <button
+                            onClick={() => confirmResourceRemoval('backupResource', backup.id, backup.name)}
+                            className="text-secondary-coral hover:text-red-700 font-medium font-montserrat transition-colors"
+                            title="Remove backup resource"
+                          >
+                            <TrashIcon className="h-5 w-5 inline" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="p-6 text-center">
+                <ArchiveBoxIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-sm font-medium text-gray-900 mb-2">No backup resources configured</h3>
+                <p className="text-sm text-gray-500 mb-4">Add backup resources from the service catalog.</p>
+                <button
+                  onClick={() => setIsServiceCatalogOpen(true)}
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
+                >
+                  <PlusIcon className="h-4 w-4 mr-1" />
+                  Add Backup
+                </button>
+              </div>
+            )}
           </div>
         );
       case 'database':
@@ -553,9 +752,19 @@ const ProjectDetails: React.FC = () => {
                     {selectedProject.virtualMachines.length}
                   </span>
                 )}
-                {tab.id === 'storage' && selectedProject.dataDisks.length > 0 && (
+                {tab.id === 'storage' && (selectedProject.storageResources.length > 0 || selectedProject.dataDisks.length > 0) && (
                   <span className="ml-2 bg-primary-mint text-primary-darkBlue text-xs px-2 py-0.5 rounded-full">
-                    {selectedProject.dataDisks.length}
+                    {selectedProject.storageResources.length + selectedProject.dataDisks.length}
+                  </span>
+                )}
+                {tab.id === 'security' && selectedProject.securityResources.length > 0 && (
+                  <span className="ml-2 bg-primary-mint text-primary-darkBlue text-xs px-2 py-0.5 rounded-full">
+                    {selectedProject.securityResources.length}
+                  </span>
+                )}
+                {tab.id === 'backup' && selectedProject.backupResources.length > 0 && (
+                  <span className="ml-2 bg-primary-mint text-primary-darkBlue text-xs px-2 py-0.5 rounded-full">
+                    {selectedProject.backupResources.length}
                   </span>
                 )}
               </button>

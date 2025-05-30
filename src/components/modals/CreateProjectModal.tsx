@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import Modal from './Modal';
-import { useProjectStore, Platform, mockPlatforms, mockRegions, ProjectType } from '../../store/projectStore';
+import { useProjectStore, Platform, ProjectType } from '../../store/projectStore';
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -10,8 +10,8 @@ interface CreateProjectModalProps {
 
 const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose }) => {
   const [name, setName] = useState('');
-  const [platform, setPlatform] = useState<Platform>('AWS');
-  const [region, setRegion] = useState<string>('');
+  const [platformId, setPlatformId] = useState<string>('');
+  const [regionId, setRegionId] = useState<string>('');
   const [projectType, setProjectType] = useState<ProjectType>('default');
   const [billingOrganization, setBillingOrganization] = useState('');
   const [owner, setOwner] = useState('');
@@ -19,28 +19,41 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   
-  // Available regions for selected platform
-  const [availableRegions, setAvailableRegions] = useState<string[]>([]);
-  
-  // Update regions when platform changes
-  useEffect(() => {
-    if (platform && mockRegions[platform]) {
-      const regions = mockRegions[platform];
-      setAvailableRegions(regions);
-      setRegion(regions[0]);
-    } else {
-      setAvailableRegions([]);
-      setRegion('');
-    }
-  }, [platform]);
+  const { addProject, platforms, regions, loadPlatforms, loadRegions } = useProjectStore();
 
-  const { addProject } = useProjectStore();
+  // Load platforms when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      loadPlatforms();
+    }
+  }, [isOpen, loadPlatforms]);
+
+  // Load regions when platform changes
+  useEffect(() => {
+    if (platformId) {
+      loadRegions(platformId);
+      setRegionId(''); // Reset region when platform changes
+    }
+  }, [platformId, loadRegions]);
+
+  // Set default values when data loads
+  useEffect(() => {
+    if (platforms.length > 0 && !platformId) {
+      setPlatformId(platforms[0].id);
+    }
+  }, [platforms, platformId]);
+
+  useEffect(() => {
+    if (regions.length > 0 && !regionId) {
+      setRegionId(regions[0].id);
+    }
+  }, [regions, regionId]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!name.trim()) newErrors.name = 'Project name is required';
-    if (!platform) newErrors.platform = 'Platform is required';
-    if (!region) newErrors.region = 'Region is required';
+    if (!platformId) newErrors.platform = 'Platform is required';
+    if (!regionId) newErrors.region = 'Region is required';
     if (!billingOrganization.trim()) newErrors.billingOrganization = 'Billing organization is required';
     if (!owner.trim()) newErrors.owner = 'Owner is required';
     
@@ -55,15 +68,21 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
     setIsSubmitting(true);
     
     try {
+      // Find selected platform name for display
+      const selectedPlatform = platforms.find(p => p.id === platformId);
+      const selectedRegion = regions.find(r => r.id === regionId);
+      
       addProject({
         name,
-        platform,
-        region,
+        platform: selectedPlatform?.display_name || selectedPlatform?.type || 'AWS' as Platform,
+        region: selectedRegion?.display_name || selectedRegion?.value,
         projectType,
         billingOrganization,
         owner,
         description,
         status: 'Active',
+        platformId,
+        regionId,
       });
       
       toast.success('Project created successfully!');
@@ -76,8 +95,8 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
 
   const handleClose = () => {
     setName('');
-    setPlatform('AWS');
-    setRegion('');
+    setPlatformId('');
+    setRegionId('');
     setProjectType('default');
     setBillingOrganization('');
     setOwner('');
@@ -102,6 +121,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
               className={`mt-1 block w-full px-3 py-2 border ${
                 errors.name ? 'border-red-300' : 'border-gray-300'
               } rounded-md shadow-sm focus:outline-none focus:ring-primary-teal focus:border-primary-teal sm:text-sm`}
+              placeholder="Enter project name"
             />
             {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
           </div>
@@ -112,17 +132,24 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
             </label>
             <select
               id="platform"
-              value={platform}
-              onChange={(e) => setPlatform(e.target.value as Platform)}
+              value={platformId}
+              onChange={(e) => setPlatformId(e.target.value)}
               className={`mt-1 block w-full px-3 py-2 border ${
                 errors.platform ? 'border-red-300' : 'border-gray-300'
               } rounded-md shadow-sm focus:outline-none focus:ring-primary-teal focus:border-primary-teal sm:text-sm`}
+              disabled={platforms.length === 0}
             >
-              {mockPlatforms.map(p => (
-                <option key={p} value={p}>{p}</option>
+              <option value="">Select platform...</option>
+              {platforms.map(platform => (
+                <option key={platform.id} value={platform.id}>
+                  {platform.display_name || platform.type}
+                </option>
               ))}
             </select>
             {errors.platform && <p className="mt-1 text-sm text-red-600">{errors.platform}</p>}
+            {platforms.length === 0 && (
+              <p className="mt-1 text-sm text-gray-500">Loading platforms...</p>
+            )}
           </div>
 
           <div>
@@ -131,18 +158,27 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
             </label>
             <select
               id="region"
-              value={region}
-              onChange={(e) => setRegion(e.target.value)}
+              value={regionId}
+              onChange={(e) => setRegionId(e.target.value)}
               className={`mt-1 block w-full px-3 py-2 border ${
                 errors.region ? 'border-red-300' : 'border-gray-300'
               } rounded-md shadow-sm focus:outline-none focus:ring-primary-teal focus:border-primary-teal sm:text-sm`}
-              disabled={availableRegions.length === 0}
+              disabled={regions.length === 0 || !platformId}
             >
-              {availableRegions.map(r => (
-                <option key={r} value={r}>{r}</option>
+              <option value="">Select region...</option>
+              {regions.map(region => (
+                <option key={region.id} value={region.id}>
+                  {region.display_name}
+                </option>
               ))}
             </select>
             {errors.region && <p className="mt-1 text-sm text-red-600">{errors.region}</p>}
+            {platformId && regions.length === 0 && (
+              <p className="mt-1 text-sm text-gray-500">Loading regions...</p>
+            )}
+            {!platformId && (
+              <p className="mt-1 text-sm text-gray-500">Please select a platform first</p>
+            )}
           </div>
 
           <div>
@@ -161,17 +197,18 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
           </div>
 
           <div>
-            <label htmlFor="billing" className="block text-sm font-medium text-gray-700 font-montserrat">
+            <label htmlFor="billingOrganization" className="block text-sm font-medium text-gray-700 font-montserrat">
               Billing Organization *
             </label>
             <input
               type="text"
-              id="billing"
+              id="billingOrganization"
               value={billingOrganization}
               onChange={(e) => setBillingOrganization(e.target.value)}
               className={`mt-1 block w-full px-3 py-2 border ${
                 errors.billingOrganization ? 'border-red-300' : 'border-gray-300'
               } rounded-md shadow-sm focus:outline-none focus:ring-primary-teal focus:border-primary-teal sm:text-sm`}
+              placeholder="Enter billing organization"
             />
             {errors.billingOrganization && <p className="mt-1 text-sm text-red-600">{errors.billingOrganization}</p>}
           </div>
@@ -188,6 +225,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
               className={`mt-1 block w-full px-3 py-2 border ${
                 errors.owner ? 'border-red-300' : 'border-gray-300'
               } rounded-md shadow-sm focus:outline-none focus:ring-primary-teal focus:border-primary-teal sm:text-sm`}
+              placeholder="Enter project owner"
             />
             {errors.owner && <p className="mt-1 text-sm text-red-600">{errors.owner}</p>}
           </div>
@@ -202,6 +240,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-teal focus:border-primary-teal sm:text-sm"
+              placeholder="Enter project description (optional)"
             />
           </div>
         </div>
@@ -216,9 +255,9 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
           </button>
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !platformId || !regionId}
             className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors font-montserrat ${
-              isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+              (isSubmitting || !platformId || !regionId) ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >
             {isSubmitting ? 'Creating...' : 'Create Project'}

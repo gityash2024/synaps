@@ -5,15 +5,6 @@ export type Platform = 'AWS' | 'Azure' | 'Private Cloud' | 'VMware';
 export type OSType = 'Ubuntu' | 'Windows Server';
 export type Status = 'Active' | 'Inactive' | 'Pending';
 
-// Mock backend data - will come from API in real implementation
-export const mockPlatforms: Platform[] = ['AWS', 'Azure', 'Private Cloud', 'VMware'];
-export const mockRegions = {
-  'AWS': ['us-east-1', 'us-west-1', 'eu-west-1', 'ap-southeast-1'],
-  'Azure': ['eastus', 'westus', 'westeurope', 'southeastasia'],
-  'Private Cloud': ['dc-1', 'dc-2', 'dc-3'],
-  'VMware': ['cluster-1', 'cluster-2', 'cluster-3']
-};
-
 export type ProjectType = 'default' | 'custom';
 
 export interface Network {
@@ -26,18 +17,47 @@ export interface VirtualMachine {
   id: string;
   name: string;
   networkId: string;
-  status: Status;
+  status: string;
   type: string;
   os: OSType;
   cpu: string;
   ram: string;
   diskSize: number;
+  details?: string;
 }
 
 export interface DataDisk {
   id: string;
   name: string;
   size: number;
+}
+
+// New interfaces for security and backup resources
+export interface SecurityResource {
+  id: string;
+  name: string;
+  type: string; // kms_key, security_group, etc.
+  status: string;
+  details: any;
+  creationDate: string;
+}
+
+export interface BackupResource {
+  id: string;
+  name: string;
+  type: string; // backup_plan, backup_vault, backup_selection
+  status: string;
+  details: any;
+  creationDate: string;
+}
+
+export interface StorageResource {
+  id: string;
+  name: string;
+  type: string; // s3, etc.
+  status: string;
+  details: any;
+  creationDate: string;
 }
 
 export interface Project {
@@ -49,10 +69,13 @@ export interface Project {
   projectType?: ProjectType;
   billingOrganization: string;
   owner: string;
-  status: Status;
+  status: string; // Changed from Status to string to handle backend values
   networks: Network[];
   virtualMachines: VirtualMachine[];
   dataDisks: DataDisk[];
+  securityResources: SecurityResource[];
+  backupResources: BackupResource[];
+  storageResources: StorageResource[];
   // Additional fields from API
   platformId?: string;
   regionId?: string;
@@ -69,30 +92,37 @@ interface ProjectState {
   regions: any[];
   vmSizes: any[];
   osList: any[];
+  subnets: any[];
+  securityGroups: any[];
   
   // Actions
   loadProjects: () => Promise<void>;
-  addProject: (project: Omit<Project, 'id' | 'networks' | 'virtualMachines' | 'dataDisks'>) => Promise<void>;
+  addProject: (project: Omit<Project, 'id' | 'networks' | 'virtualMachines' | 'dataDisks' | 'securityResources' | 'backupResources' | 'storageResources'>) => Promise<void>;
   deleteProject: (projectId: string) => Promise<void>;
   setSelectedProject: (projectId: string) => Promise<void>;
   addNetwork: (projectId: string, network: Omit<Network, 'id'>) => void;
-  addVirtualMachine: (projectId: string, vm: Omit<VirtualMachine, 'id'>) => Promise<void>;
+  addVirtualMachine: (projectId: string, vm: Omit<VirtualMachine, 'id'>, vmConfig?: { instanceTypeId: string; osId: string; subnetId?: string; securityGroupId?: string }) => Promise<void>;
   addDataDisk: (projectId: string, disk: Omit<DataDisk, 'id'>) => void;
-  removeResource: (projectId: string, resourceType: 'network' | 'virtualMachine' | 'dataDisk', resourceId: string) => Promise<void>;
+  removeResource: (projectId: string, resourceType: 'network' | 'virtualMachine' | 'dataDisk' | 'securityResource' | 'backupResource' | 'storageResource', resourceId: string) => Promise<void>;
   
   // Configuration loaders
   loadPlatforms: () => Promise<void>;
   loadRegions: (platformId: string) => Promise<void>;
   loadVMSizes: (platformId: string) => Promise<void>;
   loadOSList: (platformId: string) => Promise<void>;
+  loadSubnets: (platformId: string, regionId: string) => Promise<void>;
+  loadSecurityGroups: (platformId: string, regionId: string) => Promise<void>;
 }
 
 // Helper functions to transform API data to frontend format
-const transformApiProjectToProject = (apiProject: ApiProject, resources: ApiProjectResource[] = []): Project => {
+const transformApiProjectToProject = (apiProject: ApiProject, resources: ApiProjectResource[] = [], platforms: any[] = [], regions: any[] = []): Project => {
   // Group resources by type
   const networks: Network[] = [];
   const virtualMachines: VirtualMachine[] = [];
   const dataDisks: DataDisk[] = [];
+  const securityResources: SecurityResource[] = [];
+  const backupResources: BackupResource[] = [];
+  const storageResources: StorageResource[] = [];
 
   resources.forEach(resource => {
     switch (resource.type) {
@@ -134,12 +164,13 @@ const transformApiProjectToProject = (apiProject: ApiProject, resources: ApiProj
             id: resource.id,
             name: resource.name,
             networkId: params.find((p: any) => p.ParameterKey === 'SubnetId')?.ParameterValue || '',
-            status: resource.status === 'created' ? 'Active' : 'Pending',
+            status: resource.status,
             type: details.InstanceType || 'Unknown',
             os: details.OsType === 'linux' ? 'Ubuntu' : 'Windows Server',
             cpu: '2 vCPU', // Default, could be derived from InstanceType
             ram: '4 GB', // Default, could be derived from InstanceType  
-            diskSize: parseInt(details.DataEBSSize) || 20
+            diskSize: parseInt(details.DataEBSSize) || 20,
+            details: resource.details
           });
         } catch (e) {
           // Fallback if parsing fails
@@ -147,19 +178,44 @@ const transformApiProjectToProject = (apiProject: ApiProject, resources: ApiProj
             id: resource.id,
             name: resource.name,
             networkId: '',
-            status: resource.status === 'created' ? 'Active' : 'Pending',
+            status: resource.status,
             type: 'Unknown',
             os: 'Ubuntu',
             cpu: '2 vCPU',
             ram: '4 GB',
-            diskSize: 20
+            diskSize: 20,
+            details: resource.details
           });
         }
+        break;
+
+      case 'kms_key':
+      case 'security_group':
+        securityResources.push({
+          id: resource.id,
+          name: resource.name,
+          type: resource.type,
+          status: resource.status,
+          details: resource.details,
+          creationDate: resource.creation_date
+        });
+        break;
+
+      case 'backup_plan':
+      case 'backup_vault':
+      case 'backup_selection':
+        backupResources.push({
+          id: resource.id,
+          name: resource.name,
+          type: resource.type,
+          status: resource.status,
+          details: resource.details,
+          creationDate: resource.creation_date
+        });
         break;
         
       case 'disk':
       case 'volume':
-      case 's3':
         try {
           const details = JSON.parse(resource.details);
           dataDisks.push({
@@ -175,23 +231,42 @@ const transformApiProjectToProject = (apiProject: ApiProject, resources: ApiProj
           });
         }
         break;
+
+      case 's3':
+        storageResources.push({
+          id: resource.id,
+          name: resource.name,
+          type: resource.type,
+          status: resource.status,
+          details: resource.details,
+          creationDate: resource.creation_date
+        });
+        break;
     }
   });
+
+  // Find platform and region names from dynamic data
+  const platform = platforms.find(p => p.id === apiProject.platform_id);
+  const region = regions.find(r => r.id === apiProject.region_id); // Fixed: should match region_id, not platform_id
 
   return {
     id: apiProject.id,
     name: apiProject.name,
     description: apiProject.description,
-    platform: 'AWS', // Default, should be derived from platform_id
-    region: 'us-east-1', // Default, should be derived from API
+    platform: (platform?.display_name || platform?.type || 'AWS') as Platform,
+    region: region?.display_name || region?.value || 'us-east-1',
     projectType: 'default',
     billingOrganization: 'Demo Organization',
     owner: 'Demo User',
-    status: apiProject.status === 'active' ? 'Active' : apiProject.status === 'inactive' ? 'Inactive' : 'Pending',
+    status: apiProject.status,
     networks,
     virtualMachines,
     dataDisks,
+    securityResources,
+    backupResources,
+    storageResources,
     platformId: apiProject.platform_id,
+    regionId: apiProject.region_id,
     creationDate: apiProject.creation_date,
     deletionDate: apiProject.deletion_date
   };
@@ -206,6 +281,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   regions: [],
   vmSizes: [],
   osList: [],
+  subnets: [],
+  securityGroups: [],
 
   loadProjects: async () => {
     set({ loading: true, error: null });
@@ -217,10 +294,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         apiProjects.map(async (apiProject) => {
           try {
             const resources = await apiService.getProjectResources(apiProject.id);
-            return transformApiProjectToProject(apiProject, resources);
+            return transformApiProjectToProject(apiProject, resources, get().platforms, get().regions);
           } catch (error) {
             // If loading resources fails, return project without resources
-            return transformApiProjectToProject(apiProject, []);
+            return transformApiProjectToProject(apiProject, [], get().platforms, get().regions);
           }
         })
       );
@@ -242,7 +319,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             projectType: 'default',
             billingOrganization: 'Demo Organization',
             owner: 'Synapses User',
-            status: 'Active',
+            status: 'created',
             networks: [
               {
                 id: 'net-1',
@@ -255,7 +332,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                 id: 'vm-1',
                 name: 'Web Server',
                 networkId: 'net-1',
-                status: 'Active',
+                status: 'created',
                 type: 't2.micro',
                 os: 'Ubuntu',
                 cpu: '2 vCPU',
@@ -269,7 +346,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                 name: 'Database Storage',
                 size: 500
               }
-            ]
+            ],
+            securityResources: [],
+            backupResources: [],
+            storageResources: []
           }
         ]
       });
@@ -279,11 +359,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   addProject: async (projectData) => {
     set({ loading: true, error: null });
     try {
-      // For now, we need to map frontend data to API format
-      // This would need platform_id and region_id from the API
+      // Use dynamic platform_id and region_id from the selected values
       const response = await apiService.createProject({
-        platform_id: '33dc62e3-3410-11f0-971f-88ae1d45f51b', // Default AWS platform ID
-        region_id: '33dc6277-3410-11f0-881f-88ae1d45f51b', // Default region ID
+        platform_id: projectData.platformId || '',
+        region_id: projectData.regionId || '',
         project_name: projectData.name,
         project_type: projectData.projectType || 'default',
         owner: projectData.owner,
@@ -307,7 +386,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         id: `project-${Math.random().toString(36).substr(2, 9)}`,
         networks: [],
         virtualMachines: [],
-        dataDisks: []
+        dataDisks: [],
+        securityResources: [],
+        backupResources: [],
+        storageResources: []
       };
       set(state => ({ 
         projects: [...state.projects, newProject],
@@ -356,13 +438,16 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             id: project.id,
             customer_id: '',
             platform_id: project.platformId || '',
+            region_id: project.regionId || '',
             name: project.name,
             description: project.description,
             status: project.status.toLowerCase(),
             creation_date: project.creationDate || '',
             deletion_date: project.deletionDate
           },
-          resources
+          resources,
+          get().platforms,
+          get().regions
         );
         set({ selectedProject: updatedProject });
       } catch (error) {
@@ -400,21 +485,28 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     });
   },
   
-  addVirtualMachine: async (projectId, vmData) => {
+  addVirtualMachine: async (projectId, vmData, vmConfig) => {
     set({ loading: true, error: null });
     try {
-      // Deploy VM using API
+      // Get current project to extract platformId and other needed IDs
+      const currentProject = get().projects.find(p => p.id === projectId);
+      if (!currentProject || !vmConfig) {
+        throw new Error('Missing project information or VM configuration');
+      }
+
+      // Deploy VM using dynamic values from vmConfig
       await apiService.deployVM({
         project_id: projectId,
         name: vmData.name,
-        instance_type: '6199d218-3564-11f0-b0f3-88ae1d45f51b', // Default instance type ID
-        os_id: '6199d218-3564-11f0-b0f3-88ae1d45f51b', // Default OS ID
+        instance_type: vmConfig.instanceTypeId,
+        os_id: vmConfig.osId,
         public_ip: 'true',
         data_disk: vmData.diskSize > 0 ? 'true' : 'false',
         data_disk_size: vmData.diskSize.toString(),
-        key_pair: 'synapses',
-        subnet_id: vmData.networkId,
-        security_group_id: '6199d218-3564-11' // Default security group
+        key_pair: 'synapses', // This could be made dynamic too if needed
+        subnet_id: vmConfig.subnetId || vmData.networkId,
+        security_group_id: vmConfig.securityGroupId || '', // This should come from API
+        platform_id: currentProject.platformId || ''
       });
       
       // Add locally (since API is async)
@@ -426,7 +518,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
           const newVM = {
             ...vmData,
             id: `vm-${Math.random().toString(36).substr(2, 9)}`,
-            status: 'Pending' as Status
+            status: 'Pending'
           };
           
           projects[projectIndex] = {
@@ -504,6 +596,21 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             ...projects[projectIndex],
             dataDisks: projects[projectIndex].dataDisks.filter(disk => disk.id !== resourceId)
           };
+        } else if (resourceType === 'securityResource') {
+          projects[projectIndex] = {
+            ...projects[projectIndex],
+            securityResources: projects[projectIndex].securityResources.filter(sr => sr.id !== resourceId)
+          };
+        } else if (resourceType === 'backupResource') {
+          projects[projectIndex] = {
+            ...projects[projectIndex],
+            backupResources: projects[projectIndex].backupResources.filter(br => br.id !== resourceId)
+          };
+        } else if (resourceType === 'storageResource') {
+          projects[projectIndex] = {
+            ...projects[projectIndex],
+            storageResources: projects[projectIndex].storageResources.filter(sr => sr.id !== resourceId)
+          };
         }
         
         const selectedProject = state.selectedProject && state.selectedProject.id === projectId
@@ -522,8 +629,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       set({ platforms });
     } catch (error) {
       console.error('Failed to load platforms:', error);
-      // Fallback to mock data
-      set({ platforms: mockPlatforms.map(p => ({ id: p, name: p })) });
+      // Fallback to empty array instead of mock data
+      set({ platforms: [] });
     }
   },
 
@@ -554,6 +661,26 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     } catch (error) {
       console.error('Failed to load OS list:', error);
       set({ osList: [] });
+    }
+  },
+
+  loadSubnets: async (platformId: string, regionId: string) => {
+    try {
+      const subnets = await apiService.getSubnetList(platformId, regionId);
+      set({ subnets });
+    } catch (error) {
+      console.error('Failed to load subnets:', error);
+      set({ subnets: [] });
+    }
+  },
+
+  loadSecurityGroups: async (platformId: string, regionId: string) => {
+    try {
+      const securityGroups = await apiService.getSecurityGroupList(platformId, regionId);
+      set({ securityGroups });
+    } catch (error) {
+      console.error('Failed to load security groups:', error);
+      set({ securityGroups: [] });
     }
   }
 }));

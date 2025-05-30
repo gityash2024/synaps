@@ -70,6 +70,14 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId, net
       const selectedOS = osList.find(os => os.id === osId);
       const selectedInstanceType = vmSizes.find(vm => vm.id === instanceTypeId);
       
+      // Prepare VM configuration with dynamic values
+      const vmConfig = {
+        instanceTypeId,
+        osId,
+        subnetId: networkId, // Use selected network/subnet
+        securityGroupId: '', // This will be handled by backend or could be made configurable
+      };
+      
       await addVirtualMachine(projectId, {
         name,
         networkId,
@@ -79,7 +87,7 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId, net
         ram: '4 GB', // Default, could be parsed from Display_name
         status: 'Pending',
         type: selectedInstanceType?.value || 'Unknown',
-      });
+      }, vmConfig);
       
       toast.success('Virtual machine deployment initiated!');
       handleClose();

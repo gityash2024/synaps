@@ -9,6 +9,7 @@ export interface ApiProject {
   id: string;
   customer_id: string;
   platform_id: string;
+  region_id: string;
   name: string;
   description: string;
   status: string;
@@ -146,6 +147,7 @@ class ApiService {
     key_pair: string;
     subnet_id: string;
     security_group_id: string;
+    platform_id: string;
   }): Promise<void> {
     // This is an async endpoint with no response as per PDF
     await this.request('/api/v1/deploy_vm', {
@@ -167,7 +169,12 @@ class ApiService {
 
   // Get platform list
   async getPlatforms(): Promise<ApiPlatform[]> {
-    return this.request<ApiPlatform[]>('/api/v1/platform/get_all');
+    return this.request<ApiPlatform[]>('/api/v1/platform/get_all', {
+      method: 'POST',
+      body: JSON.stringify({
+        customer_id: CUSTOMER_ID
+      })
+    });
   }
 
   // Get VM sizes
@@ -175,7 +182,8 @@ class ApiService {
     return this.request<ApiVMSize[]>('/api/v1/config/get_vm_sizes', {
       method: 'POST',
       body: JSON.stringify({
-        platform_type: platformId
+        customer_id: CUSTOMER_ID,
+        platform_id: platformId
       })
     });
   }
@@ -185,6 +193,7 @@ class ApiService {
     return this.request<ApiOS[]>('/api/v1/config/get_os_list', {
       method: 'POST',
       body: JSON.stringify({
+        customer_id: CUSTOMER_ID,
         platform_id: platformId
       })
     });
@@ -195,7 +204,32 @@ class ApiService {
     return this.request<ApiRegion[]>('/api/v1/config/get_region_list', {
       method: 'POST',
       body: JSON.stringify({
+        customer_id: CUSTOMER_ID,
         platform_id: platformId
+      })
+    });
+  }
+
+  // Get subnet list
+  async getSubnetList(platformId: string, regionId: string): Promise<any[]> {
+    return this.request<any[]>('/api/v1/config/get_subnet_list', {
+      method: 'POST',
+      body: JSON.stringify({
+        customer_id: CUSTOMER_ID,
+        platform_id: platformId,
+        region_id: regionId
+      })
+    });
+  }
+
+  // Get security group list
+  async getSecurityGroupList(platformId: string, regionId: string): Promise<any[]> {
+    return this.request<any[]>('/api/v1/config/get_security_group_list', {
+      method: 'POST',
+      body: JSON.stringify({
+        customer_id: CUSTOMER_ID,
+        platform_id: platformId,
+        region_id: regionId
       })
     });
   }
