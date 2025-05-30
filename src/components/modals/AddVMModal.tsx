@@ -1,37 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import Modal from './Modal';
-import { useProjectStore, Network, OSType } from '../../store/projectStore';
+import { useProjectStore } from '../../store/projectStore';
 
 interface AddVMModalProps {
   isOpen: boolean;
   onClose: () => void;
   projectId: string;
-  networks: Network[];
 }
 
-const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId, networks }) => {
-  const { addVirtualMachine, loadVMSizes, loadOSList, vmSizes, osList, projects } = useProjectStore();
+const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId }) => {
+  const { addVirtualMachine, loadVMSizes, loadOSList, loadSubnets, loadSecurityGroups, vmSizes, osList, subnets, securityGroups, projects } = useProjectStore();
   
-  // Get current project to find platform
+  // Get current project to find platform and region
   const currentProject = projects.find(p => p.id === projectId);
   const platformId = currentProject?.platformId;
+  const regionId = currentProject?.regionId;
 
   const [name, setName] = useState('');
-  const [networkId, setNetworkId] = useState(networks.length > 0 ? networks[0].id : '');
+  const [subnetId, setSubnetId] = useState('');
+  const [securityGroupId, setSecurityGroupId] = useState('');
+  const [publicIp, setPublicIp] = useState(true);
+  const [enableDataDisk, setEnableDataDisk] = useState(false);
   const [diskSize, setDiskSize] = useState(50);
   const [osId, setOsId] = useState('');
   const [instanceTypeId, setInstanceTypeId] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Load VM sizes and OS list when modal opens and platform is available
+  // Load VM sizes, OS list, subnets, and security groups when modal opens
   useEffect(() => {
-    if (isOpen && platformId) {
+    if (isOpen && platformId && regionId) {
       loadVMSizes(platformId);
       loadOSList(platformId);
+      loadSubnets(platformId, regionId);
+      loadSecurityGroups(platformId, regionId);
     }
-  }, [isOpen, platformId, loadVMSizes, loadOSList]);
+  }, [isOpen, platformId, regionId, loadVMSizes, loadOSList, loadSubnets, loadSecurityGroups]);
 
   // Set default values when data loads
   useEffect(() => {
@@ -46,14 +51,28 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId, net
     }
   }, [osList, osId]);
 
+  useEffect(() => {
+    if (subnets.length > 0 && !subnetId) {
+      setSubnetId(subnets[0].id);
+    }
+  }, [subnets, subnetId]);
+
+  useEffect(() => {
+    if (securityGroups.length > 0 && !securityGroupId) {
+      setSecurityGroupId(securityGroups[0].id);
+    }
+  }, [securityGroups, securityGroupId]);
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!name.trim()) newErrors.name = 'VM name is required';
-    if (!networkId) newErrors.networkId = 'Network is required';
+    if (!subnetId) newErrors.subnetId = 'Subnet is required';
     if (!instanceTypeId) newErrors.instanceTypeId = 'Instance type is required';
     if (!osId) newErrors.osId = 'Operating system is required';
-    if (diskSize < 10) newErrors.diskSize = 'Disk size must be at least 10 GB';
-    if (diskSize > 1000) newErrors.diskSize = 'Disk size cannot exceed 1000 GB';
+    if (enableDataDisk) {
+      if (diskSize < 10) newErrors.diskSize = 'Disk size must be at least 10 GB';
+      if (diskSize > 1000) newErrors.diskSize = 'Disk size cannot exceed 1000 GB';
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -74,14 +93,17 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId, net
       const vmConfig = {
         instanceTypeId,
         osId,
-        subnetId: networkId, // Use selected network/subnet
-        securityGroupId: '', // This will be handled by backend or could be made configurable
+        publicIp: publicIp ? 'true' : 'false',
+        dataDisk: enableDataDisk ? 'true' : 'false',
+        dataDiskSize: enableDataDisk ? diskSize.toString() : '0',
+        subnetId,
+        securityGroupId,
       };
       
       await addVirtualMachine(projectId, {
         name,
-        networkId,
-        diskSize,
+        networkId: subnetId, // Use subnet ID as network ID for compatibility
+        diskSize: enableDataDisk ? diskSize : 0,
         os: selectedOS?.type === 'linux' ? 'Ubuntu' : 'Windows Server',
         cpu: selectedInstanceType?.Display_name || '2 vCPU',
         ram: '4 GB', // Default, could be parsed from Display_name
@@ -101,9 +123,10 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId, net
 
   const handleClose = () => {
     setName('');
-    if (networks.length > 0) {
-      setNetworkId(networks[0].id);
-    }
+    setSubnetId('');
+    setSecurityGroupId('');
+    setPublicIp(true);
+    setEnableDataDisk(false);
     setDiskSize(50);
     setOsId('');
     setInstanceTypeId('');
@@ -133,30 +156,51 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId, net
           </div>
 
           <div>
-            <label htmlFor="network" className="block text-sm font-medium text-gray-700">
-              Network *
+            <label htmlFor="subnet" className="block text-sm font-medium text-gray-700">
+              Subnet *
             </label>
             <select
-              id="network"
-              value={networkId}
-              onChange={(e) => setNetworkId(e.target.value)}
+              id="subnet"
+              value={subnetId}
+              onChange={(e) => setSubnetId(e.target.value)}
               className={`mt-1 block w-full px-3 py-2 border ${
-                errors.networkId ? 'border-red-300' : 'border-gray-300'
+                errors.subnetId ? 'border-red-300' : 'border-gray-300'
               } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
             >
-              {networks.length > 0 ? (
-                networks.map((network) => (
-                  <option key={network.id} value={network.id}>
-                    {network.name}
-                  </option>
-                ))
-              ) : (
-                <option value="" disabled>
-                  No networks available. Please create a network first.
+              <option value="">Select subnet...</option>
+              {subnets.map((subnet) => (
+                <option key={subnet.id} value={subnet.id}>
+                  {subnet.name}
                 </option>
-              )}
+              ))}
             </select>
-            {errors.networkId && <p className="mt-1 text-sm text-red-600">{errors.networkId}</p>}
+            {errors.subnetId && <p className="mt-1 text-sm text-red-600">{errors.subnetId}</p>}
+            {platformId && regionId && subnets.length === 0 && (
+              <p className="mt-1 text-sm text-gray-500">Loading subnets...</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="security-group" className="block text-sm font-medium text-gray-700">
+              Security Group
+            </label>
+            <select
+              id="security-group"
+              value={securityGroupId}
+              onChange={(e) => setSecurityGroupId(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              disabled={securityGroups.length === 0}
+            >
+              <option value="">Select security group...</option>
+              {securityGroups.map((sg) => (
+                <option key={sg.id} value={sg.id}>
+                  {sg.name}
+                </option>
+              ))}
+            </select>
+            {platformId && regionId && securityGroups.length === 0 && (
+              <p className="mt-1 text-sm text-gray-500">Loading security groups...</p>
+            )}
           </div>
 
           <div>
@@ -212,22 +256,50 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId, net
           </div>
 
           <div>
-            <label htmlFor="disk-size" className="block text-sm font-medium text-gray-700">
-              Disk Size (GB) *
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={publicIp}
+                onChange={(e) => setPublicIp(e.target.checked)}
+                className="rounded border-gray-300 text-primary-teal focus:ring-primary-teal mr-2"
+              />
+              <span className="text-sm font-medium text-gray-700">Assign Public IP</span>
             </label>
-            <input
-              type="number"
-              id="disk-size"
-              value={diskSize}
-              onChange={(e) => setDiskSize(parseInt(e.target.value, 10) || 0)}
-              min="10"
-              max="1000"
-              className={`mt-1 block w-full px-3 py-2 border ${
-                errors.diskSize ? 'border-red-300' : 'border-gray-300'
-              } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
-            />
-            {errors.diskSize && <p className="mt-1 text-sm text-red-600">{errors.diskSize}</p>}
+            <p className="mt-1 text-xs text-gray-500">VM will be accessible from the internet when enabled</p>
           </div>
+
+          <div>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={enableDataDisk}
+                onChange={(e) => setEnableDataDisk(e.target.checked)}
+                className="rounded border-gray-300 text-primary-teal focus:ring-primary-teal mr-2"
+              />
+              <span className="text-sm font-medium text-gray-700">Add Data Disk</span>
+            </label>
+            <p className="mt-1 text-xs text-gray-500">Additional storage disk for your applications and data</p>
+          </div>
+
+          {enableDataDisk && (
+            <div>
+              <label htmlFor="disk-size" className="block text-sm font-medium text-gray-700">
+                Data Disk Size (GB) *
+              </label>
+              <input
+                type="number"
+                id="disk-size"
+                value={diskSize}
+                onChange={(e) => setDiskSize(parseInt(e.target.value, 10) || 0)}
+                min="10"
+                max="1000"
+                className={`mt-1 block w-full px-3 py-2 border ${
+                  errors.diskSize ? 'border-red-300' : 'border-gray-300'
+                } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+              />
+              {errors.diskSize && <p className="mt-1 text-sm text-red-600">{errors.diskSize}</p>}
+            </div>
+          )}
         </div>
 
         <div className="mt-6 flex justify-end space-x-3">
@@ -240,9 +312,9 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId, net
           </button>
           <button
             type="submit"
-            disabled={isSubmitting || networks.length === 0 || !instanceTypeId || !osId}
+            disabled={isSubmitting || subnets.length === 0 || !instanceTypeId || !osId}
             className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors font-montserrat ${
-              (isSubmitting || networks.length === 0 || !instanceTypeId || !osId) ? 'opacity-70 cursor-not-allowed' : ''
+              (isSubmitting || subnets.length === 0 || !instanceTypeId || !osId) ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >
             {isSubmitting ? 'Deploying...' : 'Deploy VM'}

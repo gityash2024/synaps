@@ -101,7 +101,7 @@ interface ProjectState {
   deleteProject: (projectId: string) => Promise<void>;
   setSelectedProject: (projectId: string) => Promise<void>;
   addNetwork: (projectId: string, network: Omit<Network, 'id'>) => void;
-  addVirtualMachine: (projectId: string, vm: Omit<VirtualMachine, 'id'>, vmConfig?: { instanceTypeId: string; osId: string; subnetId?: string; securityGroupId?: string }) => Promise<void>;
+  addVirtualMachine: (projectId: string, vm: Omit<VirtualMachine, 'id'>, vmConfig?: { instanceTypeId: string; osId: string; publicIp?: string; dataDisk?: string; dataDiskSize?: string; subnetId?: string; securityGroupId?: string }) => Promise<void>;
   addDataDisk: (projectId: string, disk: Omit<DataDisk, 'id'>) => void;
   removeResource: (projectId: string, resourceType: 'network' | 'virtualMachine' | 'dataDisk' | 'securityResource' | 'backupResource' | 'storageResource', resourceId: string) => Promise<void>;
   
@@ -500,9 +500,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         name: vmData.name,
         instance_type: vmConfig.instanceTypeId,
         os_id: vmConfig.osId,
-        public_ip: 'true',
-        data_disk: vmData.diskSize > 0 ? 'true' : 'false',
-        data_disk_size: vmData.diskSize.toString(),
+        public_ip: vmConfig.publicIp || 'true',
+        data_disk: vmConfig.dataDisk || 'false',
+        data_disk_size: vmConfig.dataDiskSize || '0',
         key_pair: 'synapses', // This could be made dynamic too if needed
         subnet_id: vmConfig.subnetId || vmData.networkId,
         security_group_id: vmConfig.securityGroupId || '', // This should come from API

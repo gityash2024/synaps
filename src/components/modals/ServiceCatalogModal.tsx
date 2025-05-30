@@ -4,7 +4,6 @@ import Modal from './Modal';
 import AddNetworkModal from './AddNetworkModal';
 import AddVMModal from './AddVMModal';
 import AddDiskModal from './AddDiskModal';
-import { useProjectStore } from '../../store/projectStore';
 
 // Icons
 import { 
@@ -76,10 +75,6 @@ const catalogData = [
 ];
 
 const ServiceCatalogModal: React.FC<ServiceCatalogModalProps> = ({ isOpen, onClose, projectId }) => {
-  const { projects } = useProjectStore();
-  const project = projects.find(p => p.id === projectId);
-  const networks = project?.networks || [];
-  
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [showAddNetworkModal, setShowAddNetworkModal] = useState(false);
   const [showAddVMModal, setShowAddVMModal] = useState(false);
@@ -188,7 +183,6 @@ const ServiceCatalogModal: React.FC<ServiceCatalogModalProps> = ({ isOpen, onClo
         isOpen={showAddVMModal}
         onClose={() => setShowAddVMModal(false)}
         projectId={projectId}
-        networks={networks}
       />
 
       <AddDiskModal
