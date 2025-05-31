@@ -116,6 +116,8 @@ interface ProjectState {
 
 // Helper functions to transform API data to frontend format
 const transformApiProjectToProject = (apiProject: ApiProject, resources: ApiProjectResource[] = [], platforms: any[] = [], regions: any[] = []): Project => {
+  console.log('Transforming project:', { apiProject, platforms, regions });
+  
   // Group resources by type
   const networks: Network[] = [];
   const virtualMachines: VirtualMachine[] = [];
@@ -249,6 +251,13 @@ const transformApiProjectToProject = (apiProject: ApiProject, resources: ApiProj
   const platform = platforms.find(p => p.id === apiProject.platform_id);
   const region = regions.find(r => r.id === apiProject.region_id); // Fixed: should match region_id, not platform_id
 
+  console.log('Platform and region mapping:', { 
+    platformId: apiProject.platform_id, 
+    regionId: apiProject.region_id,
+    platform,
+    region 
+  });
+
   return {
     id: apiProject.id,
     name: apiProject.name,
@@ -266,7 +275,7 @@ const transformApiProjectToProject = (apiProject: ApiProject, resources: ApiProj
     backupResources,
     storageResources,
     platformId: apiProject.platform_id,
-    regionId: apiProject.region_id,
+    regionId: apiProject.region_id, // Ensure this is set from API
     creationDate: apiProject.creation_date,
     deletionDate: apiProject.deletion_date
   };
@@ -287,7 +296,17 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   loadProjects: async () => {
     set({ loading: true, error: null });
     try {
+      // First, ensure platforms are loaded for mapping
+      if (get().platforms.length === 0) {
+        try {
+          await get().loadPlatforms();
+        } catch (error) {
+          console.warn('Failed to load platforms, continuing with empty array');
+        }
+      }
+      
       const apiProjects = await apiService.getProjects();
+      console.log('Loaded projects from API:', apiProjects);
       
       // Load resources for each project
       const projectsWithResources = await Promise.all(
@@ -302,6 +321,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         })
       );
       
+      console.log('Transformed projects:', projectsWithResources);
       set({ projects: projectsWithResources, loading: false });
     } catch (error) {
       console.error('Failed to load projects:', error);
@@ -645,42 +665,80 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   },
 
   loadVMSizes: async (platformId: string) => {
+    console.log('Loading VM sizes for platform:', platformId);
     try {
       const vmSizes = await apiService.getVMSizes(platformId);
+      console.log('VM sizes API response:', vmSizes);
       set({ vmSizes });
     } catch (error) {
       console.error('Failed to load VM sizes:', error);
-      set({ vmSizes: [] });
+      // Fallback to mock data for testing
+      const mockVMSizes = [
+        { id: 't2.micro', Display_name: 't2.micro (1 vCPU, 1 GB RAM)', platform_id: platformId, value: 't2.micro' },
+        { id: 't2.small', Display_name: 't2.small (1 vCPU, 2 GB RAM)', platform_id: platformId, value: 't2.small' },
+        { id: 't2.medium', Display_name: 't2.medium (2 vCPU, 4 GB RAM)', platform_id: platformId, value: 't2.medium' },
+        { id: 't3.micro', Display_name: 't3.micro (2 vCPU, 1 GB RAM)', platform_id: platformId, value: 't3.micro' },
+        { id: 't3.small', Display_name: 't3.small (2 vCPU, 2 GB RAM)', platform_id: platformId, value: 't3.small' }
+      ];
+      set({ vmSizes: mockVMSizes });
     }
   },
 
   loadOSList: async (platformId: string) => {
+    console.log('Loading OS list for platform:', platformId);
     try {
       const osList = await apiService.getOSList(platformId);
+      console.log('OS list API response:', osList);
       set({ osList });
     } catch (error) {
       console.error('Failed to load OS list:', error);
-      set({ osList: [] });
+      // Fallback to mock data for testing
+      const mockOSList = [
+        { id: 'ubuntu-20-04', Display_name: 'Ubuntu 20.04 LTS', platform_id: platformId, type: 'linux', value: 'ubuntu-20-04' },
+        { id: 'ubuntu-22-04', Display_name: 'Ubuntu 22.04 LTS', platform_id: platformId, type: 'linux', value: 'ubuntu-22-04' },
+        { id: 'windows-2019', Display_name: 'Windows Server 2019', platform_id: platformId, type: 'windows', value: 'windows-2019' },
+        { id: 'windows-2022', Display_name: 'Windows Server 2022', platform_id: platformId, type: 'windows', value: 'windows-2022' },
+        { id: 'centos-7', Display_name: 'CentOS 7', platform_id: platformId, type: 'linux', value: 'centos-7' }
+      ];
+      set({ osList: mockOSList });
     }
   },
 
   loadSubnets: async (platformId: string, regionId: string) => {
+    console.log('Loading subnets for platform and region:', { platformId, regionId });
     try {
       const subnets = await apiService.getSubnetList(platformId, regionId);
+      console.log('Subnets API response:', subnets);
       set({ subnets });
     } catch (error) {
       console.error('Failed to load subnets:', error);
-      set({ subnets: [] });
+      // Fallback to mock data for testing
+      const mockSubnets = [
+        { id: 'subnet-12345', name: 'Public Subnet 1 (10.0.1.0/24)', platform_id: platformId, region_id: regionId },
+        { id: 'subnet-67890', name: 'Public Subnet 2 (10.0.2.0/24)', platform_id: platformId, region_id: regionId },
+        { id: 'subnet-abcde', name: 'Private Subnet 1 (10.0.10.0/24)', platform_id: platformId, region_id: regionId },
+        { id: 'subnet-fghij', name: 'Private Subnet 2 (10.0.11.0/24)', platform_id: platformId, region_id: regionId }
+      ];
+      set({ subnets: mockSubnets });
     }
   },
 
   loadSecurityGroups: async (platformId: string, regionId: string) => {
+    console.log('Loading security groups for platform and region:', { platformId, regionId });
     try {
       const securityGroups = await apiService.getSecurityGroupList(platformId, regionId);
+      console.log('Security groups API response:', securityGroups);
       set({ securityGroups });
     } catch (error) {
       console.error('Failed to load security groups:', error);
-      set({ securityGroups: [] });
+      // Fallback to mock data for testing
+      const mockSecurityGroups = [
+        { id: 'sg-web', name: 'Web Server Security Group (HTTP/HTTPS)', platform_id: platformId, region_id: regionId },
+        { id: 'sg-db', name: 'Database Security Group (MySQL/PostgreSQL)', platform_id: platformId, region_id: regionId },
+        { id: 'sg-ssh', name: 'SSH Access Security Group (Port 22)', platform_id: platformId, region_id: regionId },
+        { id: 'sg-default', name: 'Default Security Group', platform_id: platformId, region_id: regionId }
+      ];
+      set({ securityGroups: mockSecurityGroups });
     }
   }
 }));

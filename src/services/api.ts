@@ -1,5 +1,5 @@
 // API service layer for backend integration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://backend.bcksynapses.link';
 
 // Hardcoded customer ID as requested
 export const CUSTOMER_ID = 'fc6c5712-340f-11f0-a565-88ae1d45f51b';
@@ -64,6 +64,8 @@ class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     
+    console.log('API Request:', { url, method: options.method, body: options.body });
+    
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
@@ -75,11 +77,15 @@ class ApiService {
     try {
       const response = await fetch(url, config);
       
+      console.log('API Response status:', response.status, response.statusText);
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      return await response.json();
+      const data = await response.json();
+      console.log('API Response data:', data);
+      return data;
     } catch (error) {
       console.error(`API request failed for ${endpoint}:`, error);
       throw error;
