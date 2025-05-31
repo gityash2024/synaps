@@ -110,8 +110,8 @@ interface ProjectState {
   loadRegions: (platformId: string) => Promise<void>;
   loadVMSizes: (platformId: string) => Promise<void>;
   loadOSList: (platformId: string) => Promise<void>;
-  loadSubnets: (platformId: string, regionId: string) => Promise<void>;
-  loadSecurityGroups: (platformId: string, regionId: string) => Promise<void>;
+  loadSubnets: (projectId: string) => Promise<void>;
+  loadSecurityGroups: (projectId: string) => Promise<void>;
 }
 
 // Helper functions to transform API data to frontend format
@@ -704,39 +704,63 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }
   },
 
-  loadSubnets: async (platformId: string, regionId: string) => {
-    console.log('Loading subnets for platform and region:', { platformId, regionId });
+  loadSubnets: async (projectId: string) => {
+    console.log('Loading subnets for project:', projectId);
     try {
-      const subnets = await apiService.getSubnetList(platformId, regionId);
-      console.log('Subnets API response:', subnets);
+      const resources = await apiService.getProjectResources(projectId);
+      console.log('Project resources for subnets:', resources);
+      
+      // Filter for subnet resources
+      const subnets = resources
+        .filter(resource => resource.type === 'subnet' || resource.type === 'network')
+        .map(resource => ({
+          id: resource.id,
+          name: resource.name,
+          project_id: resource.project_id,
+          type: resource.type
+        }));
+      
+      console.log('Filtered subnets:', subnets);
       set({ subnets });
     } catch (error) {
       console.error('Failed to load subnets:', error);
       // Fallback to mock data for testing
       const mockSubnets = [
-        { id: 'subnet-12345', name: 'Public Subnet 1 (10.0.1.0/24)', platform_id: platformId, region_id: regionId },
-        { id: 'subnet-67890', name: 'Public Subnet 2 (10.0.2.0/24)', platform_id: platformId, region_id: regionId },
-        { id: 'subnet-abcde', name: 'Private Subnet 1 (10.0.10.0/24)', platform_id: platformId, region_id: regionId },
-        { id: 'subnet-fghij', name: 'Private Subnet 2 (10.0.11.0/24)', platform_id: platformId, region_id: regionId }
+        { id: 'subnet-12345', name: 'Public Subnet 1 (10.0.1.0/24)', project_id: projectId, type: 'subnet' },
+        { id: 'subnet-67890', name: 'Public Subnet 2 (10.0.2.0/24)', project_id: projectId, type: 'subnet' },
+        { id: 'subnet-abcde', name: 'Private Subnet 1 (10.0.10.0/24)', project_id: projectId, type: 'subnet' },
+        { id: 'subnet-fghij', name: 'Private Subnet 2 (10.0.11.0/24)', project_id: projectId, type: 'subnet' }
       ];
       set({ subnets: mockSubnets });
     }
   },
 
-  loadSecurityGroups: async (platformId: string, regionId: string) => {
-    console.log('Loading security groups for platform and region:', { platformId, regionId });
+  loadSecurityGroups: async (projectId: string) => {
+    console.log('Loading security groups for project:', projectId);
     try {
-      const securityGroups = await apiService.getSecurityGroupList(platformId, regionId);
-      console.log('Security groups API response:', securityGroups);
+      const resources = await apiService.getProjectResources(projectId);
+      console.log('Project resources for security groups:', resources);
+      
+      // Filter for security group resources
+      const securityGroups = resources
+        .filter(resource => resource.type === 'security_group')
+        .map(resource => ({
+          id: resource.id,
+          name: resource.name,
+          project_id: resource.project_id,
+          type: resource.type
+        }));
+      
+      console.log('Filtered security groups:', securityGroups);
       set({ securityGroups });
     } catch (error) {
       console.error('Failed to load security groups:', error);
       // Fallback to mock data for testing
       const mockSecurityGroups = [
-        { id: 'sg-web', name: 'Web Server Security Group (HTTP/HTTPS)', platform_id: platformId, region_id: regionId },
-        { id: 'sg-db', name: 'Database Security Group (MySQL/PostgreSQL)', platform_id: platformId, region_id: regionId },
-        { id: 'sg-ssh', name: 'SSH Access Security Group (Port 22)', platform_id: platformId, region_id: regionId },
-        { id: 'sg-default', name: 'Default Security Group', platform_id: platformId, region_id: regionId }
+        { id: 'sg-web', name: 'Web Server Security Group (HTTP/HTTPS)', project_id: projectId, type: 'security_group' },
+        { id: 'sg-db', name: 'Database Security Group (MySQL/PostgreSQL)', project_id: projectId, type: 'security_group' },
+        { id: 'sg-ssh', name: 'SSH Access Security Group (Port 22)', project_id: projectId, type: 'security_group' },
+        { id: 'sg-default', name: 'Default Security Group', project_id: projectId, type: 'security_group' }
       ];
       set({ securityGroups: mockSecurityGroups });
     }

@@ -15,7 +15,6 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId }) =
   // Get current project to find platform and region
   const currentProject = projects.find(p => p.id === projectId);
   const platformId = currentProject?.platformId;
-  const regionId = currentProject?.regionId;
 
   const [name, setName] = useState('');
   const [subnetId, setSubnetId] = useState('');
@@ -30,7 +29,7 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId }) =
 
   // Load VM sizes, OS list, subnets, and security groups when modal opens
   useEffect(() => {
-    console.log('AddVMModal useEffect triggered:', { isOpen, platformId, regionId, currentProject });
+    console.log('AddVMModal useEffect triggered:', { isOpen, platformId, projectId, currentProject });
     
     if (isOpen && platformId) {
       console.log('Loading VM configuration data...');
@@ -48,27 +47,22 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId }) =
         console.error('Failed to load OS list:', error);
       });
       
-      // Load subnets and security groups (need both platformId and regionId)
-      if (regionId) {
-        loadSubnets(platformId, regionId).then(() => {
-          console.log('Subnets loaded successfully');
-        }).catch(error => {
-          console.error('Failed to load subnets:', error);
-        });
-        
-        loadSecurityGroups(platformId, regionId).then(() => {
-          console.log('Security groups loaded successfully');
-        }).catch(error => {
-          console.error('Failed to load security groups:', error);
-        });
-      } else {
-        console.warn('regionId is missing, cannot load subnets and security groups');
-        console.log('Current project data:', currentProject);
-      }
+      // Load subnets and security groups using projectId (correct approach)
+      loadSubnets(projectId).then(() => {
+        console.log('Subnets loaded successfully');
+      }).catch(error => {
+        console.error('Failed to load subnets:', error);
+      });
+      
+      loadSecurityGroups(projectId).then(() => {
+        console.log('Security groups loaded successfully');
+      }).catch(error => {
+        console.error('Failed to load security groups:', error);
+      });
     } else {
-      console.log('API calls skipped:', { isOpen, platformId, regionId });
+      console.log('API calls skipped:', { isOpen, platformId, projectId });
     }
-  }, [isOpen, platformId, regionId, loadVMSizes, loadOSList, loadSubnets, loadSecurityGroups]);
+  }, [isOpen, platformId, projectId, loadVMSizes, loadOSList, loadSubnets, loadSecurityGroups]);
 
   // Set default values when data loads
   useEffect(() => {
@@ -207,11 +201,8 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId }) =
               ))}
             </select>
             {errors.subnetId && <p className="mt-1 text-sm text-red-600">{errors.subnetId}</p>}
-            {platformId && regionId && subnets.length === 0 && (
+            {platformId && subnets.length === 0 && (
               <p className="mt-1 text-sm text-gray-500">Loading subnets...</p>
-            )}
-            {platformId && !regionId && (
-              <p className="mt-1 text-sm text-red-600">Project region not configured. Please contact admin.</p>
             )}
           </div>
 
@@ -233,11 +224,8 @@ const AddVMModal: React.FC<AddVMModalProps> = ({ isOpen, onClose, projectId }) =
                 </option>
               ))}
             </select>
-            {platformId && regionId && securityGroups.length === 0 && (
+            {platformId && securityGroups.length === 0 && (
               <p className="mt-1 text-sm text-gray-500">Loading security groups...</p>
-            )}
-            {platformId && !regionId && (
-              <p className="mt-1 text-sm text-red-600">Project region not configured. Cannot load security groups.</p>
             )}
           </div>
 
