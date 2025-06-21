@@ -22,7 +22,7 @@ export interface VirtualMachine {
   os: OSType;
   cpu: string;
   ram: string;
-  diskSize: number;
+  diskSize: number | null;
   details?: string;
 }
 
@@ -167,11 +167,11 @@ const transformApiProjectToProject = (apiProject: ApiProject, resources: ApiProj
             name: resource.name,
             networkId: params.find((p: any) => p.ParameterKey === 'SubnetId')?.ParameterValue || '',
             status: resource.status,
-            type: details.InstanceType || 'Unknown',
+            type: details.InstanceType || '',
             os: details.OsType === 'linux' ? 'Ubuntu' : 'Windows Server',
-            cpu: '2 vCPU', // Default, could be derived from InstanceType
-            ram: '4 GB', // Default, could be derived from InstanceType  
-            diskSize: parseInt(details.DataEBSSize) || 20,
+            cpu: details.InstanceType ? '2 vCPU' : '', // Only show if instance type exists
+            ram: details.InstanceType ? '4 GB' : '', // Only show if instance type exists
+            diskSize: parseInt(details.DataEBSSize) || null,
             details: resource.details
           });
         } catch (e) {
@@ -181,11 +181,11 @@ const transformApiProjectToProject = (apiProject: ApiProject, resources: ApiProj
             name: resource.name,
             networkId: '',
             status: resource.status,
-            type: 'Unknown',
+            type: '',
             os: 'Ubuntu',
-            cpu: '2 vCPU',
-            ram: '4 GB',
-            diskSize: 20,
+            cpu: '',
+            ram: '',
+            diskSize: null,
             details: resource.details
           });
         }

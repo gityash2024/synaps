@@ -151,14 +151,7 @@ const ProjectDetails: React.FC = () => {
               <div className="p-6 text-center">
                 <GlobeAltIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-sm font-medium text-gray-900 mb-2">No networks configured</h3>
-                <p className="text-sm text-gray-500 mb-4">Add a network from the service catalog to get started.</p>
-                <button
-                  onClick={() => setIsServiceCatalogOpen(true)}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
-                >
-                  <PlusIcon className="h-4 w-4 mr-1" />
-                  Add Network
-                </button>
+                <p className="text-sm text-gray-500 mb-4">No network resources available.</p>
               </div>
             )}
           </div>
@@ -199,13 +192,13 @@ const ProjectDetails: React.FC = () => {
                       // Try to parse details for additional info
                       let publicIP = 'N/A';
                       let instanceId = 'N/A';
-                      let dataEBSSize = vm.diskSize;
+                      let dataEBSSize = null;
                       
                       try {
                         const details = JSON.parse(vm.details || '{}');
                         publicIP = details.PublicIP || 'N/A';
                         instanceId = details.InstanceId || 'N/A';
-                        dataEBSSize = parseInt(details.DataEBSSize) || vm.diskSize;
+                        dataEBSSize = details.DataEBSSize ? parseInt(details.DataEBSSize) : null;
                       } catch (e) {
                         // Use defaults if parsing fails
                       }
@@ -237,7 +230,7 @@ const ProjectDetails: React.FC = () => {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {dataEBSSize} GB
+                            {dataEBSSize !== null ? `${dataEBSSize} GB` : '--'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <StatusBadge status={vm.status} />
@@ -261,14 +254,7 @@ const ProjectDetails: React.FC = () => {
               <div className="p-6 text-center">
                 <ServerIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-sm font-medium text-gray-900 mb-2">No virtual machines configured</h3>
-                <p className="text-sm text-gray-500 mb-4">Deploy a VM from the service catalog to get started.</p>
-                <button
-                  onClick={() => setIsServiceCatalogOpen(true)}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
-                >
-                  <PlusIcon className="h-4 w-4 mr-1" />
-                  Deploy VM
-                </button>
+                <p className="text-sm text-gray-500 mb-4">No virtual machine resources available.</p>
               </div>
             )}
           </div>
@@ -390,14 +376,7 @@ const ProjectDetails: React.FC = () => {
               <div className="p-6 text-center">
                 <DocumentDuplicateIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-sm font-medium text-gray-900 mb-2">No storage configured</h3>
-                <p className="text-sm text-gray-500 mb-4">Add storage from the service catalog to get started.</p>
-                <button
-                  onClick={() => setIsServiceCatalogOpen(true)}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
-                >
-                  <PlusIcon className="h-4 w-4 mr-1" />
-                  Add Storage
-                </button>
+                <p className="text-sm text-gray-500 mb-4">No storage resources available.</p>
               </div>
             )}
           </div>
@@ -462,14 +441,7 @@ const ProjectDetails: React.FC = () => {
               <div className="p-6 text-center">
                 <ShieldCheckIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-sm font-medium text-gray-900 mb-2">No security resources configured</h3>
-                <p className="text-sm text-gray-500 mb-4">Add security resources from the service catalog.</p>
-                <button
-                  onClick={() => setIsServiceCatalogOpen(true)}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
-                >
-                  <PlusIcon className="h-4 w-4 mr-1" />
-                  Add Security
-                </button>
+                <p className="text-sm text-gray-500 mb-4">No security resources available.</p>
               </div>
             )}
           </div>
@@ -534,14 +506,7 @@ const ProjectDetails: React.FC = () => {
               <div className="p-6 text-center">
                 <ArchiveBoxIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-sm font-medium text-gray-900 mb-2">No backup resources configured</h3>
-                <p className="text-sm text-gray-500 mb-4">Add backup resources from the service catalog.</p>
-                <button
-                  onClick={() => setIsServiceCatalogOpen(true)}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
-                >
-                  <PlusIcon className="h-4 w-4 mr-1" />
-                  Add Backup
-                </button>
+                <p className="text-sm text-gray-500 mb-4">No backup resources available.</p>
               </div>
             )}
           </div>
@@ -551,14 +516,7 @@ const ProjectDetails: React.FC = () => {
           <div className="p-6 text-center">
             <CircleStackIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-sm font-medium text-gray-900 mb-2">No database resources configured</h3>
-            <p className="text-sm text-gray-500 mb-4">Add database resources from the service catalog.</p>
-            <button
-              onClick={() => setIsServiceCatalogOpen(true)}
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
-            >
-              <PlusIcon className="h-4 w-4 mr-1" />
-              Add Database
-            </button>
+            <p className="text-sm text-gray-500 mb-4">No database resources available.</p>
           </div>
         );
       default:
@@ -638,31 +596,6 @@ const ProjectDetails: React.FC = () => {
             {selectedProject.name}
           </h1>
           {(loading || refreshing) && <Loader size="sm" color="primary" />}
-        </div>
-        <div className="flex space-x-3">
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center px-4 py-2 text-primary-teal border border-primary-teal rounded-md hover:bg-primary-mint hover:bg-opacity-10 font-montserrat transition-colors disabled:opacity-50"
-          >
-            <svg className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            {refreshing ? 'Refreshing...' : 'Refresh'}
-          </button>
-          <button
-            onClick={() => setIsServiceCatalogOpen(true)}
-            className="flex items-center px-4 py-2 bg-primary-mint text-primary-darkBlue rounded-md hover:bg-primary-teal hover:text-white transition-colors font-montserrat"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Add Resource
-          </button>
-          <button
-            onClick={() => navigate('/projects')}
-            className="px-4 py-2 text-primary-teal border border-primary-teal rounded-md hover:bg-primary-mint hover:bg-opacity-10 font-montserrat"
-          >
-            Back to Projects
-          </button>
         </div>
       </div>
 
