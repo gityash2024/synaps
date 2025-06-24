@@ -154,18 +154,25 @@ const ProjectDetails: React.FC = () => {
                 </table>
               </div>
             ) : (
-              <div className="p-6 text-center">
-                <GlobeAltIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-sm font-medium text-gray-900 mb-2">No networks configured</h3>
-                <p className="text-sm text-gray-500 mb-4">Add a network from the service catalog.</p>
-                <button
-                  onClick={() => setIsServiceCatalogOpen(true)}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
-                >
-                  <PlusIcon className="h-4 w-4 mr-1" />
-                  Add Network
-                </button>
+              // <div className="p-6 text-center">
+              //   <GlobeAltIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              //   <h3 className="text-sm font-medium text-gray-900 mb-2">No networks configured</h3>
+              //   <p className="text-sm text-gray-500 mb-4">Add a network from the service catalog.</p>
+              //   <button
+              //     onClick={() => setIsServiceCatalogOpen(true)}
+              //     className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
+              //   >
+              //     <PlusIcon className="h-4 w-4 mr-1" />
+              //     Add Network
+              //   </button>
+              // </div>
+              <>
+              <div className='flex flex-col items-center justify-center'>
+              <span className='text-sm text-gray-500 mb-4'>No networks configured</span>
+
+
               </div>
+              </>
             )}
           </div>
         );
@@ -264,17 +271,20 @@ const ProjectDetails: React.FC = () => {
                 </table>
               </div>
             ) : (
-              <div className="p-6 text-center">
-                <ServerIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-sm font-medium text-gray-900 mb-2">No virtual machines configured</h3>
-                <p className="text-sm text-gray-500 mb-4">Add a virtual machine from the service catalog.</p>
-                <button
-                  onClick={() => setIsServiceCatalogOpen(true)}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
-                >
-                  <PlusIcon className="h-4 w-4 mr-1" />
-                  Deploy VM
-                </button>
+              // <div className="p-6 text-center">
+              //   <ServerIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              //   <h3 className="text-sm font-medium text-gray-900 mb-2">No virtual machines configured</h3>
+              //   <p className="text-sm text-gray-500 mb-4">Add a virtual machine from the service catalog.</p>
+              //   <button
+              //     onClick={() => setIsServiceCatalogOpen(true)}
+              //     className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
+              //   >
+              //     <PlusIcon className="h-4 w-4 mr-1" />
+              //     Deploy VM
+              //   </button>
+              // </div>
+              <div className='flex flex-col items-center justify-center'>
+                <span className='text-sm text-gray-500 mb-4'>No virtual machines configured</span>
               </div>
             )}
           </div>
@@ -386,24 +396,28 @@ const ProjectDetails: React.FC = () => {
                   </table>
                 </div>
               ) : (
-                <div className="p-4 text-center text-gray-500 text-sm">
-                  No data disks configured
-                </div>
+                // <div className="p-4 text-center text-gray-500 text-sm">
+                //   No data disks configured
+                // </div>
+                <></>
               )}
             </div>
 
             {selectedProject.storageResources.length === 0 && selectedProject.dataDisks.length === 0 && (
-              <div className="p-6 text-center">
-                <DocumentDuplicateIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-sm font-medium text-gray-900 mb-2">No storage configured</h3>
-                <p className="text-sm text-gray-500 mb-4">Add storage from the service catalog.</p>
-                <button
-                  onClick={() => setIsServiceCatalogOpen(true)}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
-                >
-                  <PlusIcon className="h-4 w-4 mr-1" />
-                  Add Storage
-                </button>
+              // <div className="p-6 text-center">
+              //   <DocumentDuplicateIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              //   <h3 className="text-sm font-medium text-gray-900 mb-2">No storage configured</h3>
+              //   <p className="text-sm text-gray-500 mb-4">Add storage from the service catalog.</p>
+              //   <button
+              //     onClick={() => setIsServiceCatalogOpen(true)}
+              //     className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
+              //   >
+              //     <PlusIcon className="h-4 w-4 mr-1" />
+              //     Add Storage
+              //   </button>
+              // </div>
+              <div className='flex flex-col items-center justify-center'>
+                <span className='text-sm text-gray-500 mb-4'>No storage configured</span>
               </div>
             )}
           </div>
@@ -465,17 +479,20 @@ const ProjectDetails: React.FC = () => {
                 </table>
               </div>
             ) : (
-              <div className="p-6 text-center">
-                <ShieldCheckIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-sm font-medium text-gray-900 mb-2">No security resources configured</h3>
-                <p className="text-sm text-gray-500 mb-4">Add security resources from the service catalog.</p>
-                <button
-                  onClick={() => setIsServiceCatalogOpen(true)}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
-                >
-                  <PlusIcon className="h-4 w-4 mr-1" />
-                  Add Security
-                </button>
+              // <div className="p-6 text-center">
+              //   <ShieldCheckIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              //   <h3 className="text-sm font-medium text-gray-900 mb-2">No security resources configured</h3>
+              //   <p className="text-sm text-gray-500 mb-4">Add security resources from the service catalog.</p>
+              //   <button
+              //     onClick={() => setIsServiceCatalogOpen(true)}
+              //     className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
+              //   >
+              //     <PlusIcon className="h-4 w-4 mr-1" />
+              //     Add Security
+              //   </button>
+              // </div>
+              <div className='flex flex-col items-center justify-center'>
+                <span className='text-sm text-gray-500 mb-4'>No security resources configured</span>
               </div>
             )}
           </div>
@@ -537,34 +554,40 @@ const ProjectDetails: React.FC = () => {
                 </table>
               </div>
             ) : (
-              <div className="p-6 text-center">
-                <ArchiveBoxIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-sm font-medium text-gray-900 mb-2">No backup resources configured</h3>
-                <p className="text-sm text-gray-500 mb-4">Add backup resources from the service catalog.</p>
-                <button
-                  onClick={() => setIsServiceCatalogOpen(true)}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
-                >
-                  <PlusIcon className="h-4 w-4 mr-1" />
-                  Add Backup
-                </button>
+              // <div className="p-6 text-center">
+              //   <ArchiveBoxIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              //   <h3 className="text-sm font-medium text-gray-900 mb-2">No backup resources configured</h3>
+              //   <p className="text-sm text-gray-500 mb-4">Add backup resources from the service catalog.</p>
+              //   <button
+              //     onClick={() => setIsServiceCatalogOpen(true)}
+              //     className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
+              //   >
+              //     <PlusIcon className="h-4 w-4 mr-1" />
+              //     Add Backup
+              //   </button>
+              // </div>
+              <div className='flex flex-col items-center justify-center'>
+                <span className='text-sm text-gray-500 mb-4'>No backup resources configured</span>
               </div>
             )}
           </div>
         );
       case 'database':
         return (
-          <div className="p-6 text-center">
-            <CircleStackIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-sm font-medium text-gray-900 mb-2">No database resources configured</h3>
-            <p className="text-sm text-gray-500 mb-4">Add database resources from the service catalog.</p>
-            <button
-              onClick={() => setIsServiceCatalogOpen(true)}
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
-            >
-              <PlusIcon className="h-4 w-4 mr-1" />
-              Add Database
-            </button>
+          // <div className="p-6 text-center">
+          //   <CircleStackIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+          //   <h3 className="text-sm font-medium text-gray-900 mb-2">No database resources configured</h3>
+          //   <p className="text-sm text-gray-500 mb-4">Add database resources from the service catalog.</p>
+          //   <button
+          //     onClick={() => setIsServiceCatalogOpen(true)}
+          //     className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-darkBlue bg-primary-mint hover:bg-primary-teal hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-teal transition-colors"
+          //   >
+          //     <PlusIcon className="h-4 w-4 mr-1" />
+          //     Add Database
+          //   </button>
+          // </div>
+          <div className='flex flex-col items-center justify-center'>
+            <span className='text-sm text-gray-500 mb-4'>No database resources configured</span>
           </div>
         );
       default:

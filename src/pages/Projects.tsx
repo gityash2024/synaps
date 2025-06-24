@@ -238,23 +238,22 @@ const Projects: React.FC = () => {
                       </td>
                       
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex space-x-1">
-                          {project.networks.length > 0 && (
+                        {(() => {
+                          // Calculate total resources
+                          const totalResources = 
+                            project.networks.length + 
+                            project.virtualMachines.length + 
+                            project.dataDisks.length +
+                            project.securityResources.length +
+                            project.backupResources.length +
+                            project.storageResources.length;
+                          
+                          return (
                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                              {project.networks.length} Networks
+                              {totalResources} {totalResources === 1 ? 'Resource' : 'Resources'}
                             </span>
-                          )}
-                          {project.virtualMachines.length > 0 && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                              {project.virtualMachines.length} VMs
-                            </span>
-                          )}
-                          {project.dataDisks.length > 0 && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                              {project.dataDisks.length} Disks
-                            </span>
-                          )}
-                        </div>
+                          );
+                        })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 

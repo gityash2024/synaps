@@ -391,6 +391,17 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   },
   
   setSelectedProject: async (projectId) => {
+    // Check if projects array is empty (likely on page refresh)
+    if (get().projects.length === 0) {
+      try {
+        // Load all projects first
+        await get().loadProjects();
+      } catch (error) {
+        console.error('Failed to load projects:', error);
+      }
+    }
+    
+    // Try to find the project after potentially loading all projects
     const project = get().projects.find(p => p.id === projectId);
     if (project) {
       set({ selectedProject: project });
