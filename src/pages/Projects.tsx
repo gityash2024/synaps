@@ -236,6 +236,7 @@ const Projects: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{project.owner}</div>
                       </td>
+                      
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex space-x-1">
                           {project.networks.length > 0 && (
