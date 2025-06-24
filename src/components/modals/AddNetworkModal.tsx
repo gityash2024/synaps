@@ -42,6 +42,7 @@ const AddNetworkModal: React.FC<AddNetworkModalProps> = ({ isOpen, onClose, proj
       addNetwork(projectId, {
         name,
         subnets: subnetList,
+        status: 'Active', // Add status property for networks
       });
       
       toast.success('Network added successfully!');

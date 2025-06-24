@@ -296,24 +296,33 @@ const Projects: React.FC = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                         <h3 className="text-sm font-medium text-gray-900 mb-2">
-                          {projects.length === 0 ? 'No projects found' : 'No projects match your filters'}
+                          {error ? 'Backend connection error' : 
+                           projects.length === 0 ? 'No projects found' : 'No projects match your filters'}
                         </h3>
                         <p className="text-sm text-gray-500 mb-4">
-                          {projects.length === 0 ? 'Create your first project to get started' : 'Try adjusting your search criteria'}
+                          {error ? 'Please check if the backend server is running' :
+                           projects.length === 0 ? 'No projects available' : 'Try adjusting your search criteria'}
                         </p>
-                        {projects.length === 0 ? (
+                        {!error && projects.length === 0 ? (
                           <button
                             onClick={() => setIsCreateModalOpen(true)}
                             className="px-4 py-2 bg-primary-mint text-primary-darkBlue rounded-md hover:bg-primary-teal hover:text-white transition-colors font-montserrat"
                           >
                             Create Project
                           </button>
-                        ) : (
+                        ) : !error ? (
                           <button
                             onClick={clearFilters}
                             className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
                           >
                             Clear Filters
+                          </button>
+                        ) : (
+                          <button
+                            onClick={handleRefresh}
+                            className="px-4 py-2 bg-primary-mint text-primary-darkBlue rounded-md hover:bg-primary-teal hover:text-white transition-colors font-montserrat"
+                          >
+                            Try Again
                           </button>
                         )}
                       </div>
