@@ -1,28 +1,65 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { useProjectStore, Platform, Status } from '../store/projectStore';
+import { useProjectStore } from '../store/projectStore';
 import CreateProjectModal from '../components/modals/CreateProjectModal';
 import ConfirmationModal from '../components/modals/ConfirmationModal';
 import Loader from '../components/common/Loader';
 import { EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
 
+// Update status types to match API values
+export type Status = 'created' | 'pending' | 'deleted' | 'inactive';
+
 const Projects: React.FC = () => {
-  const { projects, deleteProject, loadProjects, loading, error } = useProjectStore();
+  const { 
+    projects, 
+    deleteProject, 
+    loadProjects, 
+    loading, 
+    error,
+    platforms,
+    loadPlatforms
+  } = useProjectStore();
+  
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [platformFilter, setPlatformFilter] = useState<Platform | 'All'>('All');
-  const [statusFilter, setStatusFilter] = useState<Status | 'All'>('All');
+  const [platformFilter, setPlatformFilter] = useState<string>('All');
+  const [statusFilter, setStatusFilter] = useState<string>('All');
 
   useEffect(() => {
-    loadProjects();
-  }, [loadProjects]);
+    const initData = async () => {
+      // Load platforms first to ensure proper filtering
+      try {
+        await loadPlatforms();
+      } catch (error) {
+        console.error('Error loading platforms:', error);
+      }
+      await loadProjects();
+    };
+    
+    initData();
+  }, [loadProjects, loadPlatforms]);
 
-  const platforms: ('All' | Platform)[] = ['All', 'AWS', 'Azure', 'Private Cloud', 'VMware'];
-  const statuses: ('All' | Status)[] = ['All', 'Active', 'Inactive', 'Pending'];
+  // Updated to get unique platforms from the projects data and platforms store
+  const availablePlatforms = useMemo(() => {
+    // Extract unique platform names from projects
+    const platformsFromProjects = Array.from(new Set(projects.map(p => p.platform)));
+    
+    // Extract platform display names from the platforms store
+    const platformsFromStore = platforms.map(p => p.display_name);
+    
+    // Combine and deduplicate
+    const uniquePlatforms = Array.from(new Set([...platformsFromProjects, ...platformsFromStore]));
+    
+    // Sort alphabetically and add 'All' option at the beginning
+    return ['All', ...uniquePlatforms.sort()];
+  }, [projects, platforms]);
+  
+  // Updated to match the API statuses
+  const statuses: string[] = ['All', 'created', 'pending', 'deleted', 'inactive'];
 
   const filteredProjects = useMemo(() => {
     return projects.filter(project => {
@@ -30,8 +67,11 @@ const Projects: React.FC = () => {
         project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.description.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesPlatform = platformFilter === 'All' || project.platform === platformFilter;
-      const matchesStatus = statusFilter === 'All' || project.status === statusFilter;
+      const matchesPlatform = platformFilter === 'All' || 
+        project.platform === platformFilter;
+      
+      const matchesStatus = statusFilter === 'All' || 
+        project.status.toLowerCase() === statusFilter.toLowerCase();
       
       return matchesSearch && matchesPlatform && matchesStatus;
     });
@@ -58,12 +98,36 @@ const Projects: React.FC = () => {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
+      await loadPlatforms();
       await loadProjects();
       toast.success('Projects refreshed successfully');
     } catch (error) {
       toast.error('Failed to refresh projects');
     } finally {
       setRefreshing(false);
+    }
+  };
+
+  // Helper function to format status for display
+  const formatStatus = (status: string): string => {
+    if (!status) return 'Unknown';
+    // Capitalize first letter
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  };
+
+  // Helper function to determine status color class
+  const getStatusColorClass = (status: string): string => {
+    switch (status.toLowerCase()) {
+      case 'created':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'deleted':
+        return 'bg-gray-100 text-gray-800';
+      case 'inactive':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-blue-100 text-blue-800';
     }
   };
 
@@ -138,10 +202,10 @@ const Projects: React.FC = () => {
             <select
               id="platform"
               value={platformFilter}
-              onChange={(e) => setPlatformFilter(e.target.value as Platform | 'All')}
+              onChange={(e) => setPlatformFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-teal focus:border-primary-teal"
             >
-              {platforms.map(platform => (
+              {availablePlatforms.map(platform => (
                 <option key={platform} value={platform}>{platform}</option>
               ))}
             </select>
@@ -154,11 +218,13 @@ const Projects: React.FC = () => {
             <select
               id="status"
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as Status | 'All')}
+              onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-teal focus:border-primary-teal"
             >
               {statuses.map(status => (
-                <option key={status} value={status}>{status}</option>
+                <option key={status} value={status}>
+                  {status === 'All' ? 'All' : formatStatus(status)}
+                </option>
               ))}
             </select>
           </div>
@@ -257,11 +323,9 @@ const Projects: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                          ${project.status === 'Active' ? 'bg-green-100 text-green-800' : 
-                            project.status === 'Inactive' ? 'bg-red-100 text-red-800' : 
-                            'bg-yellow-100 text-yellow-800'}`}
+                          ${getStatusColorClass(project.status)}`}
                         >
-                          {project.status}
+                          {formatStatus(project.status)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
