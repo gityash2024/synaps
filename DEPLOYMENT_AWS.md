@@ -197,6 +197,16 @@ This guide provides step-by-step instructions for deploying the Synapses fronten
    - 404 Not Found: Check file paths and permissions
    - SSL Issues: Verify certificate installation and renewal
 
+6. **DNS and API Issues**:
+   - The frontend is currently running on the server IP. Once the DNS record is added, it will automatically run on the main domain, and no further action will be required.
+   - DNS Record Details:
+     ```
+     Type: A
+     Name: frontend
+     Value: 16.24.169.224
+     ```
+   - Getting a 401 error from APIs on the frontend, although the correct API call is going from the IP. This might be resolved by step 6 or may require a backend fix to allow the response. A screenshot has also been shared.
+
 ## Performance Optimization
 
 1. **Enable Brotli Compression** (Optional):
