@@ -205,7 +205,7 @@ This guide provides step-by-step instructions for deploying the Synapses fronten
      Name: frontend
      Value: 16.24.169.224
      ```
-   - Getting a 401 error from APIs on the frontend, although the correct API call is going from the IP. This might be resolved by step 6 or may require a backend fix to allow the response. A screenshot has also been shared.
+   - Getting a 401 error from APIs on the frontend, although the correct API call is going from the IP. This might be resolved by step 6 or may require a backend fix to allow the response.
 
 ## Performance Optimization
 
